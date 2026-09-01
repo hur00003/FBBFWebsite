@@ -62,6 +62,7 @@ require get_theme_file_path( 'inc/gallery-ajax.php' );
 require get_theme_file_path( 'inc/seed-content.php' );
 require get_theme_file_path( 'inc/template-tags.php' );
 require get_theme_file_path( 'inc/woocommerce.php' );
+require get_theme_file_path( 'inc/games.php' );
 
 /**
  * Flush rewrite rules once after the theme is activated (needed for the CPTs).
