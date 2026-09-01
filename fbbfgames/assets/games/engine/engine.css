@@ -1,0 +1,103 @@
+/*
+ * FBBF mini-game engine — shared chrome for every game.
+ * Every game's index.html loads this before its own game.css, so game.css
+ * only needs to style what's actually unique to that game.
+ */
+
+:root {
+	--fbbf-game-bg: #17181c;
+	--fbbf-game-fg: #f4ede1;
+	--fbbf-game-accent: #ff5a1f;   /* fire orange */
+	--fbbf-game-accent-2: #1f6fff; /* dragon boat blue */
+	--fbbf-game-muted: #8a8f98;
+	--fbbf-game-radius: 12px;
+	--fbbf-game-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+	margin: 0;
+	height: 100%;
+	background: var(--fbbf-game-bg);
+	color: var(--fbbf-game-fg);
+	font-family: var(--fbbf-game-font);
+	overflow: hidden;
+}
+
+.fbbf-game-frame {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.fbbf-game-hud {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.5rem 0.9rem;
+	font-weight: 600;
+	font-size: 0.95rem;
+	letter-spacing: 0.02em;
+	background: rgba(0, 0, 0, 0.25);
+}
+
+.fbbf-game-hud .fbbf-game-score::before { content: "Score "; color: var(--fbbf-game-muted); }
+.fbbf-game-hud .fbbf-game-best::before { content: "Best "; color: var(--fbbf-game-muted); }
+
+.fbbf-game-stage {
+	position: relative;
+	flex: 1;
+	min-height: 0;
+}
+
+.fbbf-game-stage canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	touch-action: none;
+}
+
+.fbbf-game-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+	text-align: center;
+	background: rgba(10, 10, 12, 0.82);
+	padding: 1.5rem;
+}
+
+.fbbf-game-overlay[hidden] { display: none; }
+
+.fbbf-game-overlay h1 {
+	margin: 0;
+	font-size: 1.5rem;
+}
+
+.fbbf-game-overlay p {
+	margin: 0;
+	color: var(--fbbf-game-muted);
+	max-width: 26em;
+}
+
+.fbbf-game-btn {
+	appearance: none;
+	border: none;
+	border-radius: var(--fbbf-game-radius);
+	padding: 0.65rem 1.4rem;
+	font: inherit;
+	font-weight: 700;
+	color: #fff;
+	background: var(--fbbf-game-accent);
+	cursor: pointer;
+}
+
+.fbbf-game-btn:hover { filter: brightness(1.08); }
+.fbbf-game-btn:active { filter: brightness(0.94); }
