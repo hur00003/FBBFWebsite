@@ -1,1 +1,33 @@
-
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>__TITLE__ — Fire Breathing Blowfish</title>
+<link rel="stylesheet" href="../engine/engine.css">
+<link rel="stylesheet" href="game.css">
+</head>
+<body>
+<div class="fbbf-game-frame">
+	<div class="fbbf-game-hud">
+		<span class="fbbf-game-score">0</span>
+		<span class="fbbf-game-best">0</span>
+	</div>
+	<div class="fbbf-game-stage">
+		<canvas></canvas>
+		<div class="fbbf-game-overlay fbbf-game-overlay--start">
+			<h1></h1>
+			<p></p>
+			<button class="fbbf-game-btn" data-fbbf-play>Play</button>
+		</div>
+		<div class="fbbf-game-overlay fbbf-game-overlay--end" hidden>
+			<h1>Game Over</h1>
+			<p>Score: <span class="fbbf-game-final-score">0</span></p>
+			<button class="fbbf-game-btn" data-fbbf-play>Play Again</button>
+		</div>
+	</div>
+</div>
+<script src="../engine/engine.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
