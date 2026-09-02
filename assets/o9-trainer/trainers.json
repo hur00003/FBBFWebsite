@@ -3,5 +3,10 @@
 		"slug": "nvs-reforecast",
 		"title": "NVS In-Season Monthly Reforecast",
 		"description": "Three monthly lock cycles shaping the Rebuy SSP and Closeout Placeholder tracks against a live demand signal."
+	},
+	{
+		"slug": "nvs-preseason-prep",
+		"title": "NVS Pre-Season Prep",
+		"description": "Clean assortment inputs, Rebuy/Closeout flags, and Closeout Placeholders across two Code Submit cycles, before the SSP ever generates."
 	}
 ]
