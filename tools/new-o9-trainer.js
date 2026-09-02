@@ -69,6 +69,7 @@ function main() {
 	console.log(`Created assets/o9-trainer/trainers/${slug}/`);
 	console.log(`Registered "${title}" in assets/o9-trainer/trainers.json`);
 	console.log(`Next: fill in the TODOs in assets/o9-trainer/trainers/${slug}/content.js`);
+	console.log(`When it's ready to share: node tools/bundle-trainer.js ${slug}`);
 }
 
 main();
