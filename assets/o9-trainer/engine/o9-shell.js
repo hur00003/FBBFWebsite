@@ -160,3 +160,29 @@ function computeScore(){
 function getScoreBadgeTier(readiness){
 	return TIER_BANDS.find(b=>readiness >= b.min) || TIER_BANDS[TIER_BANDS.length-1];
 }
+/* Is this the best tier a trainer can award? Every trainer's TIER_BANDS is
+   written highest-threshold-first (see nvs-reforecast / nvs-preseason-prep),
+   so the top tier is simply the first entry. */
+function isTopTier(tier){ return tier === TIER_BANDS[0]; }
+
+/* ==================================================================
+   TIER MEDIA — one shared photo/video per tier number, reused by every
+   trainer's Results screen so they all celebrate the same way. Add an
+   entry here (and drop the file in this engine/tier-media/ folder) to
+   wire up a new tier's media — no trainer content.js needs to change.
+   tools/bundle-trainer.js inlines whichever of these are referenced when
+   it builds a standalone .html, so the split and bundled versions both
+   just work once a file is added.
+   ================================================================== */
+const TIER_MEDIA = {
+	// 1: "tier-media" + "/tier-1.jpg", // (split so this comment itself isn't inlined by the bundler)
+};
+function tierMediaHTML(tier){
+	const src = TIER_MEDIA[tier];
+	if(!src) return "";
+	const path = /^(data:|https?:)/.test(src) ? src : "../../engine/" + src;
+	const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(src);
+	return isVideo
+		? `<video class="mascot" src="${path}" autoplay loop muted playsinline></video>`
+		: `<img class="mascot" alt="Tier ${tier} celebration" src="${path}">`;
+}

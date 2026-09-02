@@ -266,9 +266,13 @@ function renderScreen(){
 function screenResults(){
 	const d = screenEl("");
 	const badge = getScoreBadgeTier(S.score.readiness);
+	/* Only the top tier gets the celebration media — a "you won" reward, not
+	   decoration on every run (see engine's TIER_MEDIA / tierMediaHTML). */
+	const img = isTopTier(badge) ? tierMediaHTML(badge.tier) : "";
 	let h = `<div class="wrapc">
     <div style="font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--coach)">RUN COMPLETE</div>
     <div class="bignum">${Math.round(S.score.readiness)}%</div>
+    ${img}
     <div class="tierbadge">TIER ${badge.tier} · ${esc(badge.label)}</div>`;
 	KPI_OPTIONS.forEach(k=>{
 		const v = S.score.vals[k.id];

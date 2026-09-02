@@ -1659,17 +1659,10 @@ function retryMonth(m){
 
 /* ---------- REQ-14 Results Dashboard (SHARED-7) ---------- */
 function getScoreBadge(readiness){
-  const t = TIER_BANDS.find(b=>readiness >= b.min) || TIER_BANDS[TIER_BANDS.length-1];
-  /* INSERT: base64 payload for "Jacob & Oliver.png" (all four tiers use the same image).
-     Per this repo's convention, do NOT paste the payload inline — write the base64 string to a
-     scratch file and splice it into this function via script. Until then the badge is text-only. */
-  const MASCOT_B64 = null;
-  const img = MASCOT_B64
-    ? `<img class="mascot" alt="Score tier badge" src="data:image/png;base64,${MASCOT_B64}">`
-    : `<div class="mascot" style="border:1px dashed var(--t-ink3);padding:26px;text-align:center;
-         font-size:10.5px;color:var(--t-ink3);line-height:1.6">
-         SCORE-TIER IMAGE NOT EMBEDDED<br><b>Jacob &amp; Oliver.png</b><br>
-         base64 splice pending — see build note</div>`;
+  const t = getScoreBadgeTier(readiness);
+  /* Only the top tier gets the celebration media — this is a "you won" reward,
+     not decoration shown on every run (see engine's TIER_MEDIA / tierMediaHTML). */
+  const img = isTopTier(t) ? tierMediaHTML(t.tier) : "";
   return { img, tier:t };
 }
 function screenResults(){

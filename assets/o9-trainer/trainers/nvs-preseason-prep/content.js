@@ -863,6 +863,9 @@ function screenResults(){
 	const avg = id => per.length ? per.reduce((s,p)=>s+p.vals[id],0)/per.length : 0;
 	const readiness = per.length ? per.reduce((s,p)=>s+p.readiness,0)/per.length : 0;
 	const tier = getScoreBadgeTier(readiness);
+	/* Only the top tier gets the celebration media — a "you won" reward, not
+	   decoration on every run (see engine's TIER_MEDIA / tierMediaHTML). */
+	const img = isTopTier(tier) ? tierMediaHTML(tier.tier) : "";
 	const d = screenEl("");
 	let h = `<div style="display:grid;grid-template-columns:340px 1fr;min-height:100vh">
     <div class="dark" style="padding:44px 34px">
@@ -870,6 +873,7 @@ function screenResults(){
       <div style="font-size:15px;color:#C9CDD2;margin-top:10px">Prep Readiness</div>
       <div class="bignum">${Math.round(readiness)}%</div>
       <div style="font-size:11.5px;color:var(--t-ink3);margin-top:8px">${esc(S.mode)} mode · ${per.length} of 2 cycles submitted</div>
+      ${img}
       <div class="tierbadge">TIER ${tier.tier} · ${esc(tier.label)}</div>
     </div>
     <div style="padding:36px 40px">

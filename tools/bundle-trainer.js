@@ -17,15 +17,37 @@ const fs = require("fs");
 const path = require("path");
 
 const TRAINER_DIR = path.join(__dirname, "..", "assets", "o9-trainer");
-const ENGINE_CSS = path.join(TRAINER_DIR, "engine", "o9-shell.css");
-const ENGINE_JS = path.join(TRAINER_DIR, "engine", "o9-shell.js");
+const ENGINE_DIR = path.join(TRAINER_DIR, "engine");
+const ENGINE_CSS = path.join(ENGINE_DIR, "o9-shell.css");
+const ENGINE_JS = path.join(ENGINE_DIR, "o9-shell.js");
 const MANIFEST_PATH = path.join(TRAINER_DIR, "trainers.json");
 const DIST_DIR = path.join(TRAINER_DIR, "dist");
+
+const MIME_TYPES = {
+	".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".gif": "image/gif",
+	".webp": "image/webp", ".svg": "image/svg+xml", ".mp4": "video/mp4", ".webm": "video/webm", ".mov": "video/quicktime",
+};
 
 function titleFromIndexHtml(indexHtmlPath, fallback) {
 	const html = fs.readFileSync(indexHtmlPath, "utf8");
 	const m = html.match(/<title>(.*?)<\/title>/s);
 	return m ? m[1] : fallback;
+}
+
+/* Inline any TIER_MEDIA-style "tier-media/<file>" references in the engine
+   source as data: URIs, so a standalone bundle needs no sibling asset files.
+   Generic over whatever's actually in engine/tier-media/ — no per-tier code. */
+function inlineTierMedia(engineJs) {
+	return engineJs.replace(/"tier-media\/([^"]+)"/g, (match, filename) => {
+		const filePath = path.join(ENGINE_DIR, "tier-media", filename);
+		if (!fs.existsSync(filePath)) {
+			console.error(`TIER_MEDIA references "tier-media/${filename}" but that file doesn't exist at ${filePath}.`);
+			process.exit(1);
+		}
+		const mime = MIME_TYPES[path.extname(filename).toLowerCase()] || "application/octet-stream";
+		const b64 = fs.readFileSync(filePath).toString("base64");
+		return `"data:${mime};base64,${b64}"`;
+	});
 }
 
 function bundle(slug, title) {
@@ -39,7 +61,7 @@ function bundle(slug, title) {
 	}
 
 	const css = fs.readFileSync(ENGINE_CSS, "utf8");
-	const engineJs = fs.readFileSync(ENGINE_JS, "utf8");
+	const engineJs = inlineTierMedia(fs.readFileSync(ENGINE_JS, "utf8"));
 	const contentJs = fs.readFileSync(contentJsPath, "utf8");
 	const resolvedTitle = fs.existsSync(indexHtmlPath) ? titleFromIndexHtml(indexHtmlPath, title) : title;
 
