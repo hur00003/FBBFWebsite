@@ -256,6 +256,7 @@ const TIER_BANDS = [
 /* This trainer's own Tier 1 celebration — see tier-media/ next to this file. */
 const TIER_MEDIA = {
 	1: "tier-media/tier-1.webp",
+	4: "tier-media/tier-4.webp",
 };
 const KPI_OPTIONS = [
 	{ id:"KPI-1", name:"Flag Accuracy",
@@ -867,9 +868,9 @@ function screenResults(){
 	const avg = id => per.length ? per.reduce((s,p)=>s+p.vals[id],0)/per.length : 0;
 	const readiness = per.length ? per.reduce((s,p)=>s+p.readiness,0)/per.length : 0;
 	const tier = getScoreBadgeTier(readiness);
-	/* Only the top tier gets the celebration media — a "you won" reward, not
-	   decoration on every run. */
-	const img = isTopTier(tier) ? tierMediaHTML(TIER_MEDIA[tier.tier], tier.tier) : "";
+	/* Whichever tiers have an entry in TIER_MEDIA get celebration (or
+	   consolation) media — tiers without one just show nothing. */
+	const img = tierMediaHTML(TIER_MEDIA[tier.tier], tier.tier);
 	const d = screenEl("");
 	let h = `<div style="display:grid;grid-template-columns:340px 1fr;min-height:100vh">
     <div class="dark" style="padding:44px 34px">

@@ -1661,12 +1661,13 @@ function retryMonth(m){
 /* This trainer's own Tier 1 celebration — see tier-media/ next to this file. */
 const TIER_MEDIA = {
   1: "tier-media/tier-1.webp",
+  4: "tier-media/tier-4.webp",
 };
 function getScoreBadge(readiness){
   const t = getScoreBadgeTier(readiness);
-  /* Only the top tier gets the celebration media — this is a "you won" reward,
-     not decoration shown on every run. */
-  const img = isTopTier(t) ? tierMediaHTML(TIER_MEDIA[t.tier], t.tier) : "";
+  /* Whichever tiers have an entry in TIER_MEDIA get celebration (or
+     consolation) media — tiers without one just show nothing. */
+  const img = tierMediaHTML(TIER_MEDIA[t.tier], t.tier);
   return { img, tier:t };
 }
 function screenResults(){
