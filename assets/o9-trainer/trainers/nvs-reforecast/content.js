@@ -1658,11 +1658,15 @@ function retryMonth(m){
 }
 
 /* ---------- REQ-14 Results Dashboard (SHARED-7) ---------- */
+/* This trainer's own Tier 1 celebration — see tier-media/ next to this file. */
+const TIER_MEDIA = {
+  1: "tier-media/tier-1.webp",
+};
 function getScoreBadge(readiness){
   const t = getScoreBadgeTier(readiness);
   /* Only the top tier gets the celebration media — this is a "you won" reward,
-     not decoration shown on every run (see engine's TIER_MEDIA / tierMediaHTML). */
-  const img = isTopTier(t) ? tierMediaHTML(t.tier) : "";
+     not decoration shown on every run. */
+  const img = isTopTier(t) ? tierMediaHTML(TIER_MEDIA[t.tier], t.tier) : "";
   return { img, tier:t };
 }
 function screenResults(){

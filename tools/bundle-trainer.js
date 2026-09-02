@@ -34,12 +34,14 @@ function titleFromIndexHtml(indexHtmlPath, fallback) {
 	return m ? m[1] : fallback;
 }
 
-/* Inline any TIER_MEDIA-style "tier-media/<file>" references in the engine
-   source as data: URIs, so a standalone bundle needs no sibling asset files.
-   Generic over whatever's actually in engine/tier-media/ — no per-tier code. */
-function inlineTierMedia(engineJs) {
-	return engineJs.replace(/"tier-media\/([^"]+)"/g, (match, filename) => {
-		const filePath = path.join(ENGINE_DIR, "tier-media", filename);
+/* Inline a trainer's own TIER_MEDIA-style "tier-media/<file>" references as
+   data: URIs, so its standalone bundle needs no sibling asset files. Each
+   trainer keeps its own tier-media/ folder (its celebration image isn't
+   shared with any other trainer), so this resolves paths against that
+   trainer's own directory, not a global one. */
+function inlineTierMedia(contentJs, trainerDir) {
+	return contentJs.replace(/"tier-media\/([^"]+)"/g, (match, filename) => {
+		const filePath = path.join(trainerDir, "tier-media", filename);
 		if (!fs.existsSync(filePath)) {
 			console.error(`TIER_MEDIA references "tier-media/${filename}" but that file doesn't exist at ${filePath}.`);
 			process.exit(1);
@@ -61,8 +63,8 @@ function bundle(slug, title) {
 	}
 
 	const css = fs.readFileSync(ENGINE_CSS, "utf8");
-	const engineJs = inlineTierMedia(fs.readFileSync(ENGINE_JS, "utf8"));
-	const contentJs = fs.readFileSync(contentJsPath, "utf8");
+	const engineJs = fs.readFileSync(ENGINE_JS, "utf8");
+	const contentJs = inlineTierMedia(fs.readFileSync(contentJsPath, "utf8"), trainerDir);
 	const resolvedTitle = fs.existsSync(indexHtmlPath) ? titleFromIndexHtml(indexHtmlPath, title) : title;
 
 	for (const [name, src] of [["engine.js", engineJs], ["content.js", contentJs]]) {

@@ -28,13 +28,23 @@ function slugify(title) {
 		.replace(/^-+|-+$/g, "");
 }
 
-function copyTemplate(destDir, slug, title) {
+const TEXT_EXTENSIONS = new Set([".js", ".html", ".css", ".json", ".md", ".txt"]);
+
+function copyTemplate(srcDir, destDir, title) {
 	fs.mkdirSync(destDir, { recursive: true });
-	for (const name of fs.readdirSync(TEMPLATE_DIR)) {
-		const contents = fs
-			.readFileSync(path.join(TEMPLATE_DIR, name), "utf8")
-			.replace(/__TITLE__/g, title);
-		fs.writeFileSync(path.join(destDir, name), contents);
+	for (const name of fs.readdirSync(srcDir)) {
+		const srcPath = path.join(srcDir, name);
+		const destPath = path.join(destDir, name);
+		if (fs.statSync(srcPath).isDirectory()) {
+			copyTemplate(srcPath, destPath, title);
+			continue;
+		}
+		if (TEXT_EXTENSIONS.has(path.extname(name).toLowerCase())) {
+			const contents = fs.readFileSync(srcPath, "utf8").replace(/__TITLE__/g, title);
+			fs.writeFileSync(destPath, contents);
+		} else {
+			fs.copyFileSync(srcPath, destPath); // binary assets (tier-media images/video) — copy as-is
+		}
 	}
 }
 
@@ -63,7 +73,7 @@ function main() {
 		process.exit(1);
 	}
 
-	copyTemplate(destDir, slug, title);
+	copyTemplate(TEMPLATE_DIR, destDir, title);
 	updateManifest(slug, title);
 
 	console.log(`Created assets/o9-trainer/trainers/${slug}/`);

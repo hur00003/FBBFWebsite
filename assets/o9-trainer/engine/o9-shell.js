@@ -166,23 +166,20 @@ function getScoreBadgeTier(readiness){
 function isTopTier(tier){ return tier === TIER_BANDS[0]; }
 
 /* ==================================================================
-   TIER MEDIA — one shared photo/video per tier number, reused by every
-   trainer's Results screen so they all celebrate the same way. Add an
-   entry here (and drop the file in this engine/tier-media/ folder) to
-   wire up a new tier's media — no trainer content.js needs to change.
-   tools/bundle-trainer.js inlines whichever of these are referenced when
-   it builds a standalone .html, so the split and bundled versions both
-   just work once a file is added.
+   TIER MEDIA — a "you won" reward image/video for the top tier. Each
+   trainer owns its own celebration: content.js defines its own
+   TIER_MEDIA map with paths relative to its own trainer folder (e.g.
+   "tier-media/tier-1.png", stored alongside that trainer's content.js),
+   and calls this renderer with the resolved path. This function is pure
+   engine plumbing — no trainer-specific data lives here — so two
+   trainers can show completely different Tier 1 celebrations.
+   tools/bundle-trainer.js inlines a trainer's own tier-media files as
+   base64 when it builds that trainer's standalone .html.
    ================================================================== */
-const TIER_MEDIA = {
-	1: "tier-media/tier-1.webp",
-};
-function tierMediaHTML(tier){
-	const src = TIER_MEDIA[tier];
+function tierMediaHTML(src, tier){
 	if(!src) return "";
-	const path = /^(data:|https?:)/.test(src) ? src : "../../engine/" + src;
 	const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(src);
 	return isVideo
-		? `<video class="mascot" src="${path}" autoplay loop muted playsinline></video>`
-		: `<img class="mascot" alt="Tier ${tier} celebration" src="${path}">`;
+		? `<video class="mascot" src="${src}" autoplay loop muted playsinline></video>`
+		: `<img class="mascot" alt="Tier ${tier} celebration" src="${src}">`;
 }

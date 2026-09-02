@@ -253,6 +253,10 @@ const TIER_BANDS = [
 	{ min:60, tier:3, label:"GAPS REMAIN" },
 	{ min:0,  tier:4, label:"NOT READY FOR SSP" }
 ];
+/* This trainer's own Tier 1 celebration — see tier-media/ next to this file. */
+const TIER_MEDIA = {
+	1: "tier-media/tier-1.webp",
+};
 const KPI_OPTIONS = [
 	{ id:"KPI-1", name:"Flag Accuracy",
 	  desc:"Share of style colors needing a Rebuy/Closeout confirmation that ended with the correct flag set.",
@@ -864,8 +868,8 @@ function screenResults(){
 	const readiness = per.length ? per.reduce((s,p)=>s+p.readiness,0)/per.length : 0;
 	const tier = getScoreBadgeTier(readiness);
 	/* Only the top tier gets the celebration media — a "you won" reward, not
-	   decoration on every run (see engine's TIER_MEDIA / tierMediaHTML). */
-	const img = isTopTier(tier) ? tierMediaHTML(tier.tier) : "";
+	   decoration on every run. */
+	const img = isTopTier(tier) ? tierMediaHTML(TIER_MEDIA[tier.tier], tier.tier) : "";
 	const d = screenEl("");
 	let h = `<div style="display:grid;grid-template-columns:340px 1fr;min-height:100vh">
     <div class="dark" style="padding:44px 34px">

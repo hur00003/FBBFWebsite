@@ -66,6 +66,11 @@ const TIER_BANDS = [
 	{ min:50, tier:2, label:"NEEDS WORK" },
 	{ min:0,  tier:3, label:"START OVER" }
 ];
+/* TODO: this trainer's own Tier 1 celebration image/video. Drop the file in
+   tier-media/ next to this content.js and point to it here, e.g.
+   1: "tier-media/tier-1.png". Leave empty for no celebration media. */
+const TIER_MEDIA = {
+};
 const KPI_OPTIONS = [
 	{ id:"KPI-1", name:"Shaping Coverage",
 	  desc:"Share of items with a planner override entered.",
@@ -267,8 +272,8 @@ function screenResults(){
 	const d = screenEl("");
 	const badge = getScoreBadgeTier(S.score.readiness);
 	/* Only the top tier gets the celebration media — a "you won" reward, not
-	   decoration on every run (see engine's TIER_MEDIA / tierMediaHTML). */
-	const img = isTopTier(badge) ? tierMediaHTML(badge.tier) : "";
+	   decoration on every run. */
+	const img = isTopTier(badge) ? tierMediaHTML(TIER_MEDIA[badge.tier], badge.tier) : "";
 	let h = `<div class="wrapc">
     <div style="font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--coach)">RUN COMPLETE</div>
     <div class="bignum">${Math.round(S.score.readiness)}%</div>
