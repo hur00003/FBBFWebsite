@@ -175,7 +175,7 @@ function isTopTier(tier){ return tier === TIER_BANDS[0]; }
    just work once a file is added.
    ================================================================== */
 const TIER_MEDIA = {
-	// 1: "tier-media" + "/tier-1.jpg", // (split so this comment itself isn't inlined by the bundler)
+	1: "tier-media/tier-1.webp",
 };
 function tierMediaHTML(tier){
 	const src = TIER_MEDIA[tier];
