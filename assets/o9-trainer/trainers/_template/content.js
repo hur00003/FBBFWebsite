@@ -26,7 +26,18 @@ const NAV = [
 	{ l:"Workspace", grp:true, open:true },
 	{ l:"Workspace", leaf:true, page:"workspace" }
 ];
-const SCOPE = [["Currency","USD"],["Season","TODO"]];
+/* ---------- Scope Picker — the scope bar's clickable chips, standard
+   across every trainer (see o9-shell.js's SCOPE PICKER section for the
+   engine side). TODO: replace with this trainer's real scope dimensions
+   and members. ---------- */
+const SCOPE_PICKERS = {
+	currency: { chipLabel:"Currency", tabs:[
+		{ key:"currency", label:"Currency", multi:false, members:["USD","EUR","GBP"] }
+	]},
+	season: { chipLabel:"Season", tabs:[
+		{ key:"season", label:"Season", multi:false, members:["TODO Season A","TODO Season B"] }
+	]}
+};
 const PAGE_TITLE = { "workspace": ()=> "TODO — Workspace Title" };
 const PAGE_CHIP  = { "workspace": "Workspace" };
 
@@ -113,7 +124,10 @@ function newRun(mode){
 		items: clone(ITEMS_SEED),
 		inbox: clone(EXCEPTIONS),
 		admin: { open:false, presetIdx:null, name:"Custom Scenario", difficulty:"medium", desc:"", hint:"", targets:[] },
-		activeScenario: null
+		activeScenario: null,
+		scope: Object.fromEntries(Object.keys(SCOPE_PICKERS).map(dim=>
+			[dim, { tab:SCOPE_PICKERS[dim].tabs[0].key, selected:[SCOPE_PICKERS[dim].tabs[0].members[0]] }])),
+		scopePicker: { open:false, dim:null, tab:null, draft:[], x:0, y:0 }
 	};
 	S.items.forEach(it=>{ it.ovrd = { value:null }; });
 	return S;
@@ -175,7 +189,7 @@ function pagesHTML(){
 }
 function scopeHTML(){
 	return `<div class="scopebar"><span class="ic">▥</span><span class="ic">∇</span>` +
-	  SCOPE.map(([k,v])=>`<span class="scope"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></span>`).join("") +
+	  Object.keys(SCOPE_PICKERS).map(scopeChipHTML).join("") +
 	  `</div>`;
 }
 function reportHeaderHTML(){
@@ -271,9 +285,11 @@ function bindShell(){
 	if(bT) bT.addEventListener("click", ()=>{ S.side = S.side==="admin" ? null : "admin"; render(); });
 	app.querySelectorAll("[data-admin-submit]").forEach(b=>b.addEventListener("click", submitAdminScenario));
 	app.querySelectorAll("[data-admin-exit]").forEach(b=>b.addEventListener("click", exitAdminScenario));
+	app.querySelectorAll("[data-scope-chip]").forEach(b=>b.addEventListener("click", ()=>openScopePicker(b.dataset.scopeChip, b)));
 	renderTour();
 	renderAdminModal();
 	renderAdminResults();
+	renderScopePicker();
 }
 function beginEdit(td){
 	const [id,field,m] = td.dataset.edit.split("|");

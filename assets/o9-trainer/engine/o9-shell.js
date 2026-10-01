@@ -25,6 +25,9 @@
  *                  Modal's Target KPI dropdown picks from — distinct from
  *                  KPI_OPTIONS, which are this trainer's weighted 0-100
  *                  Results/Tier factors, not raw counts/values
+ *   SCOPE_PICKERS — { [dim]: { chipLabel, tabs:[{key,label,multi,members}] } }
+ *                  the scope bar's clickable chips (see the SCOPE PICKER
+ *                  section below for the full content/engine contract)
  *   render()     — content's shell re-render function (engine calls it
  *                  after coach/tour interactions change S)
  *   fireHint(id, opts) / skipTour()
@@ -373,4 +376,82 @@ function renderAdminResults(){
   </div></div>`;
 	document.body.appendChild(ov);
 	ov.querySelector("#admResClose").addEventListener("click", ()=>{ S.admin.resultsOpen = false; render(); });
+}
+
+/* ==================================================================
+   SCOPE PICKER — a popover opened from a scope-bar chip, standard across
+   every trainer. Generic given content-supplied SCOPE_PICKERS. Unlike
+   the Guided Tour / Admin Modal overlays, the page behind it is never
+   dimmed — it's a positioned popover, not a full-screen modal.
+
+   Content.js must seed its initial state (newRun()) with:
+     S.scope = { [dim]: { tab: <first tab's key>, selected: [members...] } }
+       — one entry per key in SCOPE_PICKERS, each pre-seeded with
+       whatever default selection makes sense for that trainer
+     S.scopePicker = { open:false, dim:null, tab:null, draft:[], x:0, y:0 }
+   and render scopeChipHTML(dim) for each dim instead of a static chip,
+   and call renderScopePicker() wherever renderTour() is already called.
+   ================================================================== */
+function scopeDisplayValue(dim){
+	const sel = S.scope[dim].selected;
+	const total = SCOPE_PICKERS[dim].tabs.find(t=>t.key===S.scope[dim].tab).members.length;
+	if(sel.length === total) return "(All)";
+	if(sel.length <= 1) return sel[0] || "(None)";
+	return sel[0] + " (+" + (sel.length-1) + ")";
+}
+function scopeChipHTML(dim){
+	const cfg = SCOPE_PICKERS[dim];
+	return `<button class="scope" data-scope-chip="${dim}">
+    <span class="k">${esc(cfg.chipLabel)}</span><span class="v">${esc(scopeDisplayValue(dim))}</span></button>`;
+}
+function openScopePicker(dim, el){
+	const r = el.getBoundingClientRect();
+	const tab = S.scope[dim].tab;
+	S.scopePicker = { open:true, dim, tab, draft:[...S.scope[dim].selected], x:r.left, y:r.bottom+6 };
+	render();
+}
+function closeScopePicker(){ S.scopePicker.open = false; render(); }
+function switchScopePickerTab(tabKey){
+	const p = S.scopePicker;
+	p.tab = tabKey;
+	p.draft = (tabKey === S.scope[p.dim].tab) ? [...S.scope[p.dim].selected] : [];
+	render();
+}
+function toggleScopeMember(member){
+	const p = S.scopePicker;
+	const tabCfg = SCOPE_PICKERS[p.dim].tabs.find(t=>t.key===p.tab);
+	if(!tabCfg.multi){ p.draft = [member]; render(); return; }
+	const i = p.draft.indexOf(member);
+	if(i === -1) p.draft.push(member); else p.draft.splice(i,1);
+	render();
+}
+function applyScopePicker(){
+	const p = S.scopePicker;
+	S.scope[p.dim] = { tab:p.tab, selected:[...p.draft] };
+	closeScopePicker();
+}
+function renderScopePicker(){
+	const old = document.getElementById("scopePickerOv"); if(old) old.remove();
+	const p = S.scopePicker;
+	if(!p || !p.open) return;
+	const cfg = SCOPE_PICKERS[p.dim];
+	const tabCfg = cfg.tabs.find(t=>t.key===p.tab);
+	const ov = document.createElement("div");
+	ov.id = "scopePickerOv"; ov.className = "scopepicker"; ov.setAttribute("role","dialog");
+	ov.setAttribute("aria-label", cfg.chipLabel + " picker");
+	ov.style.left = p.x + "px"; ov.style.top = p.y + "px";
+	ov.innerHTML = `<div class="tabs2">${cfg.tabs.map(t=>
+      `<button class="${t.key===p.tab?"on":""}" data-sp-tab="${t.key}">${esc(t.label)}</button>`).join("")}</div>
+    <div class="body">
+      <div class="count">ⓘ ${p.draft.length} selected out of all ${tabCfg.members.length} available members.</div>
+      <div class="members">${tabCfg.members.map(m=>
+        `<button class="member ${p.draft.includes(m)?"on":""}" data-sp-member="${esc(m)}">${esc(m).toUpperCase()}</button>`).join("")}</div>
+    </div>
+    <div class="foot"><button class="btn" id="spCancel">Cancel</button>
+      <button class="btn go" id="spApply">✓ Apply</button></div>`;
+	document.body.appendChild(ov);
+	ov.querySelectorAll("[data-sp-tab]").forEach(b=>b.addEventListener("click", ()=>switchScopePickerTab(b.dataset.spTab)));
+	ov.querySelectorAll("[data-sp-member]").forEach(b=>b.addEventListener("click", ()=>toggleScopeMember(b.dataset.spMember)));
+	ov.querySelector("#spCancel").addEventListener("click", closeScopePicker);
+	ov.querySelector("#spApply").addEventListener("click", applyScopePicker);
 }
