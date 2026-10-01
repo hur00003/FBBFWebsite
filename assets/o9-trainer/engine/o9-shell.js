@@ -160,10 +160,6 @@ function computeScore(){
 function getScoreBadgeTier(readiness){
 	return TIER_BANDS.find(b=>readiness >= b.min) || TIER_BANDS[TIER_BANDS.length-1];
 }
-/* Is this the best tier a trainer can award? Every trainer's TIER_BANDS is
-   written highest-threshold-first (see nvs-reforecast / nvs-preseason-prep),
-   so the top tier is simply the first entry. */
-function isTopTier(tier){ return tier === TIER_BANDS[0]; }
 
 /* ==================================================================
    TIER MEDIA — a "you won" reward image/video for the top tier. Each
