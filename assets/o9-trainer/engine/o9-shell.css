@@ -122,7 +122,10 @@ table.g th,table.g td{border-right:1px solid var(--p-hair);border-bottom:1px sol
   padding:4px 6px;white-space:nowrap;vertical-align:middle}
 table.g thead th{border-bottom:2px solid var(--p-hair2);font-size:10.5px;font-weight:700;text-align:left;background:#fff;
   position:sticky;top:0;z-index:2}
-table.g th[scope="row"]{font-weight:400;text-align:left}
+/* Every grid-container-shaped grid (a Style-Color/CC identity column plus a
+   stacked measure-name row-header column) bolds both consistently, engine-
+   wide — no per-trainer, per-row opt-in. */
+table.g th[scope="row"]{font-weight:700;text-align:left}
 td.n,th.n{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
 tr.grouprow td{background:var(--p-fill);font-size:10px;font-weight:700;letter-spacing:.6px;
   text-transform:uppercase;border-right:0}

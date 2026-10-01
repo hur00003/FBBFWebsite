@@ -648,14 +648,14 @@ function gridB(){
       const rows = [
         { lab:"Net Sls Fcst U (Basis)", cls:"mute",
           cell:i=>`<td class="n calc mute">${fU(r.basis[mk(i)])}</td>` },
-        { lab:"Net Sls Fcst U Adj %", bold:true,
+        { lab:"Net Sls Fcst U Adj %",
           cell:i=> ec(r.id,"adjPct",mk(i), r.adjPct[mk(i)], fP, L) },
-        { lab:"Net Sls Fcst U Ovrd", bold:true,
+        { lab:"Net Sls Fcst U Ovrd",
           cell:i=> ec(r.id,"ovrd",mk(i), r.ovrd[mk(i)], fU, L) },
-        { lab:"Net Sls U Constr (WF)", bold:true, total:fU(ssn),
+        { lab:"Net Sls U Constr (WF)", total:fU(ssn),
           cell:i=>`<td class="n calc expl" data-expl="rebuy|${r.id}|${mk(i)}" tabindex="0"
                    style="font-weight:700">${fU(rebuyConstr(r,mk(i)))}</td>` },
-        { lab:"Net Sls MSRP Deg % Ovrd", bold:true,
+        { lab:"Net Sls MSRP Deg % Ovrd",
           cell:i=> ec(r.id,"degPct",mk(i), r.degPct[mk(i)], v=> v==null?"":fPc(v), L, "deg") },
         { lab:"Receipt U Ovrd",
           cell:i=> ec(r.id,"receiptOvrd",mk(i), r.receiptOvrd[mk(i)], fU, L) },
@@ -664,8 +664,8 @@ function gridB(){
       ];
       rows.forEach((row,ri)=>{
         h += `<tr><td>${ri===0?"<b>"+esc(r.midlevel)+"</b>":""}</td>
-          <td style="color:var(--t-ink2)">${ri===0?esc(r.styleColor):""}</td>
-          <th scope="row" ${row.bold?'style="font-weight:700"':""} class="${row.cls||""} ${row.ital?"ital":""}">${esc(row.lab)}</th>` +
+          <td>${ri===0?"<b>"+esc(r.styleColor)+"</b>":""}</td>
+          <th scope="row" class="${row.cls||""} ${row.ital?"ital":""}">${esc(row.lab)}</th>` +
           g.map(i=>row.cell(i)).join("") +
           `<td class="n" style="font-weight:${row.total?700:400}">${row.total||""}</td>` +
           (ri===0 ? lockCellHTML(r) : "<td></td>") + `</tr>`;
@@ -692,28 +692,28 @@ function gridC(){
     const ssnCo = g.reduce((s,i)=> s + (w[mk(i)].constr||0), 0);
     h += `<tr class="grouprow"><td colspan="${g.length+5}">CLOSEOUT · ${esc(c.code)} — ${esc(c.midlevel)}</td></tr>`;
     const rows = [
-      { lab:"Transfer In U (WF)", bold:true, total:fU(ssnTI), cell:i=> ec(c.id,"transferIn",mk(i), c.transferIn[mk(i)], fU, L) },
+      { lab:"Transfer In U (WF)", total:fU(ssnTI), cell:i=> ec(c.id,"transferIn",mk(i), c.transferIn[mk(i)], fU, L) },
       { lab:"Total Avail Inv U (WF)", cell:i=>`<td class="n calc expl" data-expl="ph|${c.id}|${mk(i)}" tabindex="0">${fU(w[mk(i)].avail)}</td>` },
-      { lab:"Net Sls Fcst U Ovrd", bold:true, cell:i=> ec(c.id,"ovrd",mk(i), c.ovrd[mk(i)], fU, L) },
-      { lab:"Net Sls U Constr (WF)", bold:true, total:fU(ssnCo), cell:i=>{
+      { lab:"Net Sls Fcst U Ovrd", cell:i=> ec(c.id,"ovrd",mk(i), c.ovrd[mk(i)], fU, L) },
+      { lab:"Net Sls U Constr (WF)", total:fU(ssnCo), cell:i=>{
           const t = w[mk(i)];
           return `<td class="n ${t.truncated?"constr":"calc"} expl" data-expl="ph|${c.id}|${mk(i)}" tabindex="0" style="font-weight:700">
             ${fU(t.constr)}${t.truncated?'<span class="flagtxt">CAPPED</span>':""}</td>`; } },
-      { lab:"Net Sls AUR $ (WF)", bold:true, cell:i=> ec(c.id,"aur",mk(i), c.aur[mk(i)], f2, L) },
-      { lab:"Net Sls AUC $ (WF)", bold:true, cell:i=> ec(c.id,"auc",mk(i), c.auc[mk(i)], f2, L) },
-      { lab:"Net Sls MSRP Deg % Ovrd", bold:true, cell:i=> ec(c.id,"degPct",mk(i), c.degPct[mk(i)], v=>v==null?"":fPc(v), L, "deg") },
+      { lab:"Net Sls AUR $ (WF)", cell:i=> ec(c.id,"aur",mk(i), c.aur[mk(i)], f2, L) },
+      { lab:"Net Sls AUC $ (WF)", cell:i=> ec(c.id,"auc",mk(i), c.auc[mk(i)], f2, L) },
+      { lab:"Net Sls MSRP Deg % Ovrd", cell:i=> ec(c.id,"degPct",mk(i), c.degPct[mk(i)], v=>v==null?"":fPc(v), L, "deg") },
       { lab:"EOP U (WF)", cell:i=>`<td class="n calc">${fU(w[mk(i)].eop)}</td>` }
     ];
     rows.forEach((row,ri)=>{
       h += `<tr><td>${ri===0?"<b>"+esc(c.midlevel)+"</b>":""}</td>
-        <td style="color:var(--t-ink2)">${ri===0?esc(c.code):""}</td>
-        <th scope="row" ${row.bold?'style="font-weight:700"':""}>${esc(row.lab)}</th>` +
+        <td>${ri===0?"<b>"+esc(c.code)+"</b>":""}</td>
+        <th scope="row">${esc(row.lab)}</th>` +
         g.map(i=>row.cell(i)).join("") +
         `<td class="n" style="font-weight:${row.total?700:400}">${row.total||""}</td>` +
         (ri===0 ? lockCellHTML(c) : "<td></td>") + `</tr>`;
     });
     /* Transfer Out Date — single-value editable, spec §4 Grid C */
-    h += `<tr><td></td><td></td><th scope="row" style="font-weight:700">Transfer Out Date</th>
+    h += `<tr><td></td><td></td><th scope="row">Transfer Out Date</th>
       <td colspan="${g.length+1}">` +
       (L ? `<span class="lockcell" style="padding:3px 6px">${esc(c.transferOutDate||"")}</span>`
          : `<input class="rationale" style="min-height:0;width:170px;margin:0" type="date"
@@ -738,12 +738,12 @@ function gridD(){
     const w = closeoutWalk(c), L = c.locked;
     const sel = S.selectedPH === c.id;
     const rows = [
-      { lab:"Transfer In U (WF)", bold:true, cell:i=> ec(c.id,"transferIn",mk(i), c.transferIn[mk(i)], fU, L) },
-      { lab:"Net Sls U Constr (WF)", bold:true, cell:i=>{ const t=w[mk(i)];
+      { lab:"Transfer In U (WF)", cell:i=> ec(c.id,"transferIn",mk(i), c.transferIn[mk(i)], fU, L) },
+      { lab:"Net Sls U Constr (WF)", cell:i=>{ const t=w[mk(i)];
           return `<td class="n ${t.truncated?"constr":"calc"} expl" data-expl="ph|${c.id}|${mk(i)}" tabindex="0" style="font-weight:700">
             ${fU(t.constr)}${t.truncated?'<span class="flagtxt">CAPPED</span>':""}</td>`; } },
-      { lab:"Net Sls AUR $ (WF)", bold:true, cell:i=> ec(c.id,"aur",mk(i), c.aur[mk(i)], f2, L) },
-      { lab:"Net Sls AUC $ (WF)", bold:true, cell:i=> ec(c.id,"auc",mk(i), c.auc[mk(i)], f2, L) },
+      { lab:"Net Sls AUR $ (WF)", cell:i=> ec(c.id,"aur",mk(i), c.aur[mk(i)], f2, L) },
+      { lab:"Net Sls AUC $ (WF)", cell:i=> ec(c.id,"auc",mk(i), c.auc[mk(i)], f2, L) },
       { lab:"Total Avail Inv U (WF)", cell:i=>`<td class="n calc">${fU(w[mk(i)].avail)}</td>` },
       { lab:"EOP U (WF)", cell:i=>`<td class="n calc">${fU(w[mk(i)].eop)}</td>` }
     ];
@@ -751,8 +751,8 @@ function gridD(){
       h += `<tr ${sel?'style="outline:2px solid var(--coach);outline-offset:-2px"':""}>
         <td>${ri===0?"⋯":""}</td><td>${ri===0?"EMEA":""}</td><td>${ri===0?"Nike Value Stores":""}</td>
         <td>${ri===0?"<b>"+esc(c.midlevel)+"</b>":""}</td>
-        <td style="color:var(--t-ink2);font-weight:${ri===0?700:400}">${ri===0?esc(c.code):""}</td>
-        <th scope="row" ${row.bold?'style="font-weight:700"':""}>${esc(row.lab)}</th>` +
+        <td>${ri===0?"<b>"+esc(c.code)+"</b>":""}</td>
+        <th scope="row">${esc(row.lab)}</th>` +
         g.map(i=>row.cell(i)).join("") +
         (ri===0 ? lockCellHTML(c) : "<td></td>") + `</tr>`;
     });
