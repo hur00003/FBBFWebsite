@@ -886,8 +886,9 @@ function explHTML(){
   const [kind,id,m] = S.sideCtx.split("|");
   if(kind==="aa"){
     const a = ASSORTMENT_ACTIONS[Number(id)];
-    return panelHead("EXPLAINABILITY","Assortment Action recommendation", a.sc+" · "+a.rec) +
-      `<div class="sc"><div class="sec-hdr t">CRITERIA MET</div>
+    return panelHead("EXPLAINABILITY","Assortment Action recommendation") +
+      `<div class="sc">` + identityFieldsHTML([["STYLE-COLOR",a.sc],["RECOMMENDATION",a.rec]]) +
+      `<div class="sec-hdr t">CRITERIA MET</div>
       <ul><li>${esc(a.crit).split(" · ").join("</li><li>")}</li></ul>
       <div class="panelfoot">This mirrors the Visualization tab. It is the evidence you take to ${esc(a.owner)}. Explainability states the criteria; it does not recommend an action.</div></div>`;
   }
@@ -895,8 +896,9 @@ function explHTML(){
     const r = S.rebuy.find(x=>x.id===id);
     const eop = REBUY_EOP[r.midlevel][m], ad = r.avgDemand;
     const stale = S.lastShapeEdit && (!S.awosRefreshTs || S.awosRefreshTs < S.lastShapeEdit);
-    return panelHead("EXPLAINABILITY","aWOS (WF)", r.styleColor+" · "+m) + `<div class="sc">
-      <div class="sec-hdr t">THE ARITHMETIC</div>
+    return panelHead("EXPLAINABILITY","aWOS (WF)") +
+      `<div class="sc">` + identityFieldsHTML([["STYLE-COLOR",r.styleColor],["PERIOD",m]]) +
+      `<div class="sec-hdr t">THE ARITHMETIC</div>
       <div class="calcrow"><span>EOP Inventory U</span><b>${fU(eop)}</b></div>
       <div class="calcrow"><span>÷ Average Demand per week</span><b>${fU(ad)}</b></div>
       <div class="calcrow"><span>= aWOS (WF)</span><b>${f1(eop/ad)}</b></div>
@@ -909,8 +911,9 @@ function explHTML(){
   }
   if(kind==="ph"){
     const c = S.closeout.find(x=>x.id===id), w = closeoutWalk(c)[m];
-    return panelHead("EXPLAINABILITY","Net Sls U Constr (WF)", c.code+" · "+c.midlevel+" · "+m) + `<div class="sc">
-      <div class="sec-hdr t">THE ARITHMETIC</div>
+    return panelHead("EXPLAINABILITY","Net Sls U Constr (WF)") +
+      `<div class="sc">` + identityFieldsHTML([["STYLE-COLOR",c.code],["MIDLEVEL",c.midlevel],["PERIOD",m]]) +
+      `<div class="sec-hdr t">THE ARITHMETIC</div>
       <div class="calcrow mute"><span>BOP U (WF) · current period</span><b>${fU(w.bop)}</b></div>
       <div class="calcrow"><span>+ Transfer In U (WF)</span><b>${fU(w.ti)}</b></div>
       <div class="calcrow"><span>= Total Avail Inv U (WF)</span><b>${fU(w.avail)}</b></div>
@@ -933,8 +936,9 @@ function explHTML(){
   const r = S.rebuy.find(x=>x.id===id);
   const basis = r.basis[m], adj = r.adjPct[m], ov = r.ovrd[m];
   const surv = survivingOverride(r,m);
-  return panelHead("EXPLAINABILITY","Net Sls U Constr (WF)", r.styleColor+" · "+m) + `<div class="sc">
-    <div class="sec-hdr t">THE ARITHMETIC</div>
+  return panelHead("EXPLAINABILITY","Net Sls U Constr (WF)") +
+    `<div class="sc">` + identityFieldsHTML([["STYLE-COLOR",r.styleColor],["PERIOD",m]]) +
+    `<div class="sec-hdr t">THE ARITHMETIC</div>
     <div class="calcrow mute"><span>Net Sls Fcst U (system Basis)</span><b>${fU(basis)}</b></div>
     <div class="calcrow ${surv==="adjPct"?"":"mute"}"><span>Net Sls Fcst U Adj % ${ov!=null&&adj!=null?"· suppressed":""}</span><b>${adj==null?"—":fP(adj)}</b></div>
     <div class="calcrow ${surv==="ovrd"?"":"mute"}"><span>Net Sls Fcst U Ovrd</span><b>${ov==null?"—":fU(ov)}</b></div>
@@ -974,8 +978,9 @@ function flowHTML(){
   const [ , id, m] = (S.sideCtx2||"|RB3|"+mk(MONTH_CFG[S.month].cur)).split("|");
   const r = S.rebuy.find(x=>x.id===id) || S.rebuy[2];
   const adj = r.adjPct[m], ov = r.ovrd[m];
-  return panelHead("EXPLAINABILITY FLOW","Flow A — how a planned number becomes the locked number", r.styleColor+" · "+m) + `<div class="sc">
-    <div class="flow" style="flex-direction:column">
+  return panelHead("EXPLAINABILITY FLOW","Flow A — how a planned number becomes the locked number") +
+    `<div class="sc">` + identityFieldsHTML([["STYLE-COLOR",r.styleColor],["PERIOD",m]]) +
+    `<div class="flow" style="flex-direction:column">
       ${node("SYSTEM","Net Sls Fcst U", fU(r.basis[m]), "system Basis","none-ink","none-fill")}
       ${node("PLANNER","Net Sls Fcst U Adj %", adj==null?"—":fP(adj), ov!=null&&adj!=null?"override P2 · suppressed":"override P2",
              (ov!=null&&adj!=null)?"cancel-ink":"none-ink",(ov!=null&&adj!=null)?"cancel-fill":"none-fill")}

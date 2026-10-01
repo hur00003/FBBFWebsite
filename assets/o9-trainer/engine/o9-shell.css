@@ -244,6 +244,11 @@ input.cell[type=date]{font-family:var(--ui);font-size:10px}
 .side .hd .meta{font-size:10.5px;color:var(--t-ink3)}
 .side .x{position:absolute;right:8px;top:8px;border:0;background:none;font-size:16px;color:var(--t-ink3)}
 .side .sc{overflow-y:auto;padding:0 0 16px;flex:1}
+/* ---------- identity fields — labeled STYLE-COLOR/PERIOD-style rows at
+   the top of a side panel, standard across every trainer ---------- */
+.idfield{margin:0 14px 10px}
+.idfield .k{font-size:9.5px;font-weight:700;letter-spacing:.7px;color:var(--t-ink3);text-transform:uppercase}
+.idfield .v{font-size:12.5px;font-weight:700;margin-top:2px}
 .calcrow{display:flex;justify-content:space-between;padding:5px 14px;font-size:11px}
 .calcrow b{font-family:var(--num);font-size:12px}
 .calcrow.mute,.calcrow.mute b{color:var(--t-ink3)}

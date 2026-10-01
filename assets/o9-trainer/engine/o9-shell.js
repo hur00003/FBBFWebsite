@@ -78,6 +78,16 @@ function panelHead(eyebrow,title,meta){
     <button class="x" data-close-side aria-label="Close panel">×</button></div>`;
 }
 
+/* ---------- labeled identity fields, shown at the top of a side panel's
+   body (e.g. STYLE-COLOR / PERIOD) — clearer for orientation than packing
+   the same info into panelHead()'s one-line meta subtitle. Returns rows
+   only; the caller places them inside its own .sc wrapper, ahead of
+   whatever panel-specific content follows (e.g. the arithmetic). ---------- */
+function identityFieldsHTML(fields){
+	return fields.map(([k,v])=>
+		`<div class="idfield"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`).join("");
+}
+
 /* ---------- explainability-flow node, shared by every flow diagram ---------- */
 function node(cap,nm,vl,sb,ink,fill){
 	return `<div class="node" style="border-color:var(--${ink})">

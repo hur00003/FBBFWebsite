@@ -85,9 +85,28 @@ button{font-family:inherit;font-size:inherit;cursor:pointer}
 .scopebar{display:flex;align-items:center;gap:10px;height:32px;border-bottom:1px solid var(--p-hair);
   padding:0 8px;flex:0 0 auto;overflow-x:auto;white-space:nowrap}
 .scopebar .ic{color:var(--p-icon);font-size:13px}
-.scope{display:flex;align-items:center;gap:5px}
+.scope{display:flex;align-items:center;gap:5px;border:0;background:none;padding:0}
 .scope .k{font-size:10px;color:var(--p-icon)}
 .scope .v{font-size:10px;background:var(--p-fill);padding:3px 8px}
+
+/* ---------- Scope Picker — a popover opened from a scope chip, standard
+   across every trainer. Anchored near the chip; the page behind it stays
+   visible (no dimming backdrop), unlike the full-screen overlay modals. ---------- */
+.scopepicker{position:fixed;background:#fff;border:1px solid var(--p-hair2);
+  box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:80;width:420px}
+.scopepicker .tabs2{display:flex;border-bottom:1px solid var(--p-hair);padding:0 16px}
+.scopepicker .tabs2 button{border:0;background:none;padding:10px 4px;margin-right:18px;
+  font-size:12px;color:var(--p-icon);border-bottom:2px solid transparent}
+.scopepicker .tabs2 button.on{color:var(--p-text);font-weight:700;border-bottom-color:#000}
+.scopepicker .body{padding:14px 16px}
+.scopepicker .count{font-size:11px;color:var(--t-ink2);margin-bottom:10px}
+.scopepicker .members{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:260px;overflow-y:auto}
+.scopepicker .member{border:1px solid var(--p-hair2);padding:9px 10px;font-size:11.5px;
+  text-align:center;background:#fff;color:var(--t-ink)}
+.scopepicker .member.on{background:var(--chase-fill);border-color:var(--chase-ink);
+  color:var(--chase-ink);font-weight:700}
+.scopepicker .foot{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px;
+  border-top:1px solid var(--p-hair)}
 .rpthdr{display:flex;align-items:baseline;gap:14px;padding:8px 10px 0;flex:0 0 auto}
 .rpthdr h1{font-size:13.5px;font-weight:700;margin:0;border-bottom:2px solid #000;padding-bottom:3px}
 .rows{font-size:10px;color:var(--p-info)}
@@ -122,6 +141,28 @@ button{font-family:inherit;font-size:inherit;cursor:pointer}
 .rstep.on .t{color:var(--t-ink);font-weight:700}
 .rstep.on .s{color:var(--act-ink)}
 .rsep{display:flex;align-items:center;color:var(--t-ink3);padding:0 2px}
+
+/* ---------- Process Flow — a collapsible step diagram, standard across
+   every trainer (e.g. "how this page's work flows end to end"). Distinct
+   from the ribbon above: the ribbon is the warm "where are we right now
+   in the month" position indicator; this is a reference diagram a
+   trainee expands to orient themselves, never a warm surface, and each
+   step can carry its own state (current / at-risk / default). ---------- */
+.procflow{margin:8px 10px}
+.procflow-hd{display:flex;align-items:center;gap:6px;border:0;background:none;
+  padding:4px 0;font-size:12px;font-weight:700;color:var(--t-ink)}
+.procflow-hd .chev{font-size:9px;color:var(--t-ink3)}
+.procflow-hd .sub{font-weight:400;color:var(--t-ink3)}
+.procflow-steps{display:flex;align-items:stretch;gap:0;margin-top:8px;flex-wrap:wrap}
+.pfstep{flex:1;min-width:150px;padding:8px 12px;background:var(--p-fill);color:var(--t-ink3);
+  border:1px solid var(--p-hair)}
+.pfstep .t{font-size:11px;font-weight:700}
+.pfstep .s{font-size:9.5px;margin-top:2px}
+.pfstep.on{background:var(--imp-ink);border-color:var(--imp-ink);color:#fff}
+.pfstep.on .t,.pfstep.on .s{color:#fff}
+.pfstep.warn{background:var(--cancel-fill);border-color:var(--cancel-ink);color:var(--cancel-ink)}
+.pfstep.warn .t,.pfstep.warn .s{color:var(--cancel-ink)}
+.pfsep{display:flex;align-items:center;justify-content:center;width:28px;color:var(--t-ink3);font-size:13px}
 
 /* ---------- grid ---------- */
 table.g{border-collapse:collapse;font-size:11px;width:100%}
@@ -180,6 +221,7 @@ input.cell[type=date]{font-family:var(--ui);font-size:10px}
 .btn.pri{background:var(--coach);border-color:var(--coach);color:#fff;font-weight:700}
 .btn.dark{background:var(--t-ink);border-color:var(--t-ink);color:#fff;font-weight:700}
 .btn.ghost{background:none;border:0;color:var(--t-ink3);font-size:11px}
+.btn.go{background:var(--chase-ink);border-color:var(--chase-ink);color:#fff;font-weight:700}
 .btn[disabled]{opacity:.45;cursor:not-allowed}
 
 /* Coach dock */
@@ -209,6 +251,11 @@ input.cell[type=date]{font-family:var(--ui);font-size:10px}
 .side .hd .meta{font-size:10.5px;color:var(--t-ink3)}
 .side .x{position:absolute;right:8px;top:8px;border:0;background:none;font-size:16px;color:var(--t-ink3)}
 .side .sc{overflow-y:auto;padding:0 0 16px;flex:1}
+/* ---------- identity fields — labeled STYLE-COLOR/PERIOD-style rows at
+   the top of a side panel, standard across every trainer ---------- */
+.idfield{margin:0 14px 10px}
+.idfield .k{font-size:9.5px;font-weight:700;letter-spacing:.7px;color:var(--t-ink3);text-transform:uppercase}
+.idfield .v{font-size:12.5px;font-weight:700;margin-top:2px}
 .calcrow{display:flex;justify-content:space-between;padding:5px 14px;font-size:11px}
 .calcrow b{font-family:var(--num);font-size:12px}
 .calcrow.mute,.calcrow.mute b{color:var(--t-ink3)}
@@ -378,6 +425,14 @@ input.cell[type=date]{font-family:var(--ui);font-size:10px}
  *                  Modal's Target KPI dropdown picks from — distinct from
  *                  KPI_OPTIONS, which are this trainer's weighted 0-100
  *                  Results/Tier factors, not raw counts/values
+ *   SCOPE_PICKERS — { [dim]: { chipLabel, tabs:[{key,label,multi,members}] } }
+ *                  the scope bar's clickable chips (see the SCOPE PICKER
+ *                  section below for the full content/engine contract)
+ *
+ * processFlowHTML(id, title, subtitle, steps) is a pure render piece (like
+ * cellLegend()) — content.js calls it directly wherever a collapsible
+ * end-to-end step diagram belongs, no global config needed; see the
+ * PROCESS FLOW section below for the steps array shape and S.flows.
  *   render()     — content's shell re-render function (engine calls it
  *                  after coach/tour interactions change S)
  *   fireHint(id, opts) / skipTour()
@@ -421,6 +476,16 @@ function panelHead(eyebrow,title,meta){
 	return `<div class="bar"></div><div class="hd"><div class="eyebrow">${esc(eyebrow)}</div>
     <h3>${esc(title)}</h3><div class="meta">${esc(meta||"")}</div>
     <button class="x" data-close-side aria-label="Close panel">×</button></div>`;
+}
+
+/* ---------- labeled identity fields, shown at the top of a side panel's
+   body (e.g. STYLE-COLOR / PERIOD) — clearer for orientation than packing
+   the same info into panelHead()'s one-line meta subtitle. Returns rows
+   only; the caller places them inside its own .sc wrapper, ahead of
+   whatever panel-specific content follows (e.g. the arithmetic). ---------- */
+function identityFieldsHTML(fields){
+	return fields.map(([k,v])=>
+		`<div class="idfield"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`).join("");
 }
 
 /* ---------- explainability-flow node, shared by every flow diagram ---------- */
@@ -726,6 +791,116 @@ function renderAdminResults(){
   </div></div>`;
 	document.body.appendChild(ov);
 	ov.querySelector("#admResClose").addEventListener("click", ()=>{ S.admin.resultsOpen = false; render(); });
+}
+
+/* ==================================================================
+   SCOPE PICKER — a popover opened from a scope-bar chip, standard across
+   every trainer. Generic given content-supplied SCOPE_PICKERS. Unlike
+   the Guided Tour / Admin Modal overlays, the page behind it is never
+   dimmed — it's a positioned popover, not a full-screen modal.
+
+   Content.js must seed its initial state (newRun()) with:
+     S.scope = { [dim]: { tab: <first tab's key>, selected: [members...] } }
+       — one entry per key in SCOPE_PICKERS, each pre-seeded with
+       whatever default selection makes sense for that trainer
+     S.scopePicker = { open:false, dim:null, tab:null, draft:[], x:0, y:0 }
+   and render scopeChipHTML(dim) for each dim instead of a static chip,
+   and call renderScopePicker() wherever renderTour() is already called.
+   ================================================================== */
+function scopeDisplayValue(dim){
+	const sel = S.scope[dim].selected;
+	const total = SCOPE_PICKERS[dim].tabs.find(t=>t.key===S.scope[dim].tab).members.length;
+	if(sel.length === total) return "(All)";
+	if(sel.length <= 1) return sel[0] || "(None)";
+	return sel[0] + " (+" + (sel.length-1) + ")";
+}
+function scopeChipHTML(dim){
+	const cfg = SCOPE_PICKERS[dim];
+	return `<button class="scope" data-scope-chip="${dim}">
+    <span class="k">${esc(cfg.chipLabel)}</span><span class="v">${esc(scopeDisplayValue(dim))}</span></button>`;
+}
+function openScopePicker(dim, el){
+	const r = el.getBoundingClientRect();
+	const tab = S.scope[dim].tab;
+	S.scopePicker = { open:true, dim, tab, draft:[...S.scope[dim].selected], x:r.left, y:r.bottom+6 };
+	render();
+}
+function closeScopePicker(){ S.scopePicker.open = false; render(); }
+function switchScopePickerTab(tabKey){
+	const p = S.scopePicker;
+	p.tab = tabKey;
+	p.draft = (tabKey === S.scope[p.dim].tab) ? [...S.scope[p.dim].selected] : [];
+	render();
+}
+function toggleScopeMember(member){
+	const p = S.scopePicker;
+	const tabCfg = SCOPE_PICKERS[p.dim].tabs.find(t=>t.key===p.tab);
+	if(!tabCfg.multi){ p.draft = [member]; render(); return; }
+	const i = p.draft.indexOf(member);
+	if(i === -1) p.draft.push(member); else p.draft.splice(i,1);
+	render();
+}
+function applyScopePicker(){
+	const p = S.scopePicker;
+	S.scope[p.dim] = { tab:p.tab, selected:[...p.draft] };
+	closeScopePicker();
+}
+function renderScopePicker(){
+	const old = document.getElementById("scopePickerOv"); if(old) old.remove();
+	const p = S.scopePicker;
+	if(!p || !p.open) return;
+	const cfg = SCOPE_PICKERS[p.dim];
+	const tabCfg = cfg.tabs.find(t=>t.key===p.tab);
+	const ov = document.createElement("div");
+	ov.id = "scopePickerOv"; ov.className = "scopepicker"; ov.setAttribute("role","dialog");
+	ov.setAttribute("aria-label", cfg.chipLabel + " picker");
+	ov.style.left = p.x + "px"; ov.style.top = p.y + "px";
+	ov.innerHTML = `<div class="tabs2">${cfg.tabs.map(t=>
+      `<button class="${t.key===p.tab?"on":""}" data-sp-tab="${t.key}">${esc(t.label)}</button>`).join("")}</div>
+    <div class="body">
+      <div class="count">ⓘ ${p.draft.length} selected out of all ${tabCfg.members.length} available members.</div>
+      <div class="members">${tabCfg.members.map(m=>
+        `<button class="member ${p.draft.includes(m)?"on":""}" data-sp-member="${esc(m)}">${esc(m).toUpperCase()}</button>`).join("")}</div>
+    </div>
+    <div class="foot"><button class="btn" id="spCancel">Cancel</button>
+      <button class="btn go" id="spApply">✓ Apply</button></div>`;
+	document.body.appendChild(ov);
+	ov.querySelectorAll("[data-sp-tab]").forEach(b=>b.addEventListener("click", ()=>switchScopePickerTab(b.dataset.spTab)));
+	ov.querySelectorAll("[data-sp-member]").forEach(b=>b.addEventListener("click", ()=>toggleScopeMember(b.dataset.spMember)));
+	ov.querySelector("#spCancel").addEventListener("click", closeScopePicker);
+	ov.querySelector("#spApply").addEventListener("click", applyScopePicker);
+}
+
+/* ==================================================================
+   PROCESS FLOW — a collapsible step diagram, standard across every
+   trainer. Generic given a content-supplied steps array; purely a
+   reference/orientation piece (no scoring, no state beyond open/closed).
+   Distinct from the ribbon (warm "where are we in the month" position
+   indicator) — this shows an end-to-end process with per-step status.
+
+   Content.js must seed its initial state (newRun()) with:
+     S.flows = {}   — toggleProcessFlow(id) lazily adds entries; any id
+                      not yet present is treated as collapsed
+   and call toggleProcessFlow(id) from a click handler wired to
+   [data-flow-toggle] (see bindShell() precedent for other pieces).
+   ================================================================== */
+function processFlowHTML(id, title, subtitle, steps){
+	const open = !!(S.flows && S.flows[id]);
+	let h = `<div class="procflow"><button class="procflow-hd" data-flow-toggle="${id}" aria-expanded="${open}">
+    <span class="chev">${open?"▾":"▸"}</span>${esc(title)}
+    <span class="sub">— ${esc(subtitle)} — click to ${open?"collapse":"expand"}</span></button>`;
+	if(open){
+		h += `<div class="procflow-steps">` + steps.map((st,i)=>
+			`<div class="pfstep ${st.state||""}"><div class="t">${esc(st.t)}</div><div class="s">${esc(st.s)}</div></div>` +
+			(i<steps.length-1 ? `<div class="pfsep">→</div>` : "")
+		).join("") + `</div>`;
+	}
+	return h + `</div>`;
+}
+function toggleProcessFlow(id){
+	S.flows = S.flows || {};
+	S.flows[id] = !S.flows[id];
+	render();
 }
 
 </script>
@@ -1618,8 +1793,9 @@ function explHTML(){
   const [kind,id,m] = S.sideCtx.split("|");
   if(kind==="aa"){
     const a = ASSORTMENT_ACTIONS[Number(id)];
-    return panelHead("EXPLAINABILITY","Assortment Action recommendation", a.sc+" · "+a.rec) +
-      `<div class="sc"><div class="sec-hdr t">CRITERIA MET</div>
+    return panelHead("EXPLAINABILITY","Assortment Action recommendation") +
+      `<div class="sc">` + identityFieldsHTML([["STYLE-COLOR",a.sc],["RECOMMENDATION",a.rec]]) +
+      `<div class="sec-hdr t">CRITERIA MET</div>
       <ul><li>${esc(a.crit).split(" · ").join("</li><li>")}</li></ul>
       <div class="panelfoot">This mirrors the Visualization tab. It is the evidence you take to ${esc(a.owner)}. Explainability states the criteria; it does not recommend an action.</div></div>`;
   }
@@ -1627,8 +1803,9 @@ function explHTML(){
     const r = S.rebuy.find(x=>x.id===id);
     const eop = REBUY_EOP[r.midlevel][m], ad = r.avgDemand;
     const stale = S.lastShapeEdit && (!S.awosRefreshTs || S.awosRefreshTs < S.lastShapeEdit);
-    return panelHead("EXPLAINABILITY","aWOS (WF)", r.styleColor+" · "+m) + `<div class="sc">
-      <div class="sec-hdr t">THE ARITHMETIC</div>
+    return panelHead("EXPLAINABILITY","aWOS (WF)") +
+      `<div class="sc">` + identityFieldsHTML([["STYLE-COLOR",r.styleColor],["PERIOD",m]]) +
+      `<div class="sec-hdr t">THE ARITHMETIC</div>
       <div class="calcrow"><span>EOP Inventory U</span><b>${fU(eop)}</b></div>
       <div class="calcrow"><span>÷ Average Demand per week</span><b>${fU(ad)}</b></div>
       <div class="calcrow"><span>= aWOS (WF)</span><b>${f1(eop/ad)}</b></div>
@@ -1641,8 +1818,9 @@ function explHTML(){
   }
   if(kind==="ph"){
     const c = S.closeout.find(x=>x.id===id), w = closeoutWalk(c)[m];
-    return panelHead("EXPLAINABILITY","Net Sls U Constr (WF)", c.code+" · "+c.midlevel+" · "+m) + `<div class="sc">
-      <div class="sec-hdr t">THE ARITHMETIC</div>
+    return panelHead("EXPLAINABILITY","Net Sls U Constr (WF)") +
+      `<div class="sc">` + identityFieldsHTML([["STYLE-COLOR",c.code],["MIDLEVEL",c.midlevel],["PERIOD",m]]) +
+      `<div class="sec-hdr t">THE ARITHMETIC</div>
       <div class="calcrow mute"><span>BOP U (WF) · current period</span><b>${fU(w.bop)}</b></div>
       <div class="calcrow"><span>+ Transfer In U (WF)</span><b>${fU(w.ti)}</b></div>
       <div class="calcrow"><span>= Total Avail Inv U (WF)</span><b>${fU(w.avail)}</b></div>
@@ -1665,8 +1843,9 @@ function explHTML(){
   const r = S.rebuy.find(x=>x.id===id);
   const basis = r.basis[m], adj = r.adjPct[m], ov = r.ovrd[m];
   const surv = survivingOverride(r,m);
-  return panelHead("EXPLAINABILITY","Net Sls U Constr (WF)", r.styleColor+" · "+m) + `<div class="sc">
-    <div class="sec-hdr t">THE ARITHMETIC</div>
+  return panelHead("EXPLAINABILITY","Net Sls U Constr (WF)") +
+    `<div class="sc">` + identityFieldsHTML([["STYLE-COLOR",r.styleColor],["PERIOD",m]]) +
+    `<div class="sec-hdr t">THE ARITHMETIC</div>
     <div class="calcrow mute"><span>Net Sls Fcst U (system Basis)</span><b>${fU(basis)}</b></div>
     <div class="calcrow ${surv==="adjPct"?"":"mute"}"><span>Net Sls Fcst U Adj % ${ov!=null&&adj!=null?"· suppressed":""}</span><b>${adj==null?"—":fP(adj)}</b></div>
     <div class="calcrow ${surv==="ovrd"?"":"mute"}"><span>Net Sls Fcst U Ovrd</span><b>${ov==null?"—":fU(ov)}</b></div>
@@ -1706,8 +1885,9 @@ function flowHTML(){
   const [ , id, m] = (S.sideCtx2||"|RB3|"+mk(MONTH_CFG[S.month].cur)).split("|");
   const r = S.rebuy.find(x=>x.id===id) || S.rebuy[2];
   const adj = r.adjPct[m], ov = r.ovrd[m];
-  return panelHead("EXPLAINABILITY FLOW","Flow A — how a planned number becomes the locked number", r.styleColor+" · "+m) + `<div class="sc">
-    <div class="flow" style="flex-direction:column">
+  return panelHead("EXPLAINABILITY FLOW","Flow A — how a planned number becomes the locked number") +
+    `<div class="sc">` + identityFieldsHTML([["STYLE-COLOR",r.styleColor],["PERIOD",m]]) +
+    `<div class="flow" style="flex-direction:column">
       ${node("SYSTEM","Net Sls Fcst U", fU(r.basis[m]), "system Basis","none-ink","none-fill")}
       ${node("PLANNER","Net Sls Fcst U Adj %", adj==null?"—":fP(adj), ov!=null&&adj!=null?"override P2 · suppressed":"override P2",
              (ov!=null&&adj!=null)?"cancel-ink":"none-ink",(ov!=null&&adj!=null)?"cancel-fill":"none-fill")}
