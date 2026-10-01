@@ -259,6 +259,12 @@ input.cell[type=date]{font-family:var(--ui);font-size:10px}
 .panelfoot{margin:10px 14px;padding:9px;background:var(--none-fill);font-size:10px;
   font-style:italic;color:var(--t-ink3);line-height:1.5}
 
+/* ---------- Impact Trace — an arrow overlay drawn on the grid itself on
+   edit, standard across every trainer ---------- */
+#impactOv{position:fixed;inset:0;pointer-events:none;z-index:65}
+.impact-arrow{stroke:var(--coach);stroke-width:2.5;fill:none}
+.impact-hit{outline:2px solid var(--coach);outline-offset:-2px}
+
 /* Inbox cards */
 .summary{margin:8px 14px;padding:6px 10px;background:var(--imp-fill);color:var(--imp-ink);
   font-size:10.5px;font-weight:700}

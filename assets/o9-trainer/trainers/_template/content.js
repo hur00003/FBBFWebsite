@@ -94,6 +94,14 @@ const KPI_OPTIONS = [
 	  } }
 ];
 
+/* ---------- Impact Trace — arrow overlay drawn on the grid on edit,
+   standard across every trainer (see o9-shell.js's IMPACT TRACE
+   section). TODO: replace with this trainer's real downstream
+   relationships once there's more than one measure per row. ---------- */
+const IMPACT_GRAPH = Object.fromEntries(
+	ITEMS_SEED.map(it=>[`row-${it.id}`, [`final-${it.id}`]])
+);
+
 /* ---------- Admin Modal — scenario/challenge builder, standard across
    every trainer (see o9-shell.js's ADMIN MODAL section for the engine
    side). ADMIN_KPIS is the catalog of raw metrics selectable as a Target
@@ -128,7 +136,8 @@ function newRun(mode){
 		scope: Object.fromEntries(Object.keys(SCOPE_PICKERS).map(dim=>
 			[dim, { tab:SCOPE_PICKERS[dim].tabs[0].key, selected:[SCOPE_PICKERS[dim].tabs[0].members[0]] }])),
 		scopePicker: { open:false, dim:null, tab:null, draft:[], x:0, y:0 },
-		flows: {}
+		flows: {},
+		impactTrace: null
 	};
 	S.items.forEach(it=>{ it.ovrd = { value:null }; });
 	return S;
@@ -224,9 +233,9 @@ function gridHTML(){
     <table class="g"><thead><tr><th>Item</th><th class="n">Basis</th>
     <th class="n">Override</th><th class="n">Final</th></tr></thead><tbody>`;
 	S.items.forEach(it=>{
-		h += `<tr><td>${esc(it.label)}</td><td class="n calc mute">${fU(it.basis)}</td>` +
+		h += `<tr data-impact="row-${it.id}"><td>${esc(it.label)}</td><td class="n calc mute">${fU(it.basis)}</td>` +
 		  ec(it.id, "ovrd", "value", it.ovrd.value, fU, false) +
-		  `<td class="n" style="font-weight:700">${fU(finalValue(it))}</td></tr>`;
+		  `<td class="n" data-impact="final-${it.id}" style="font-weight:700">${fU(finalValue(it))}</td></tr>`;
 	});
 	return h + `</tbody></table>` + cellLegend();
 }
@@ -305,6 +314,7 @@ function bindShell(){
 	renderAdminModal();
 	renderAdminResults();
 	renderScopePicker();
+	renderImpactArrows();
 }
 function beginEdit(td){
 	const [id,field,m] = td.dataset.edit.split("|");
@@ -319,8 +329,10 @@ function beginEdit(td){
 		const val = raw==="" ? null : Number(raw);
 		if(raw!=="" && isNaN(val)) { render(); return; }
 		row[field][m] = val;
-		if(val != null) fireHint("H-1");
-		render();
+		if(val != null){
+			fireHint("H-1");
+			triggerImpactTrace("row-"+id);
+		} else render();
 	};
 	inp.addEventListener("blur", commit);
 	inp.addEventListener("keydown", e=>{

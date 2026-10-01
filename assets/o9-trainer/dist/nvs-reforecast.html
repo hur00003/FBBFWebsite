@@ -266,6 +266,12 @@ input.cell[type=date]{font-family:var(--ui);font-size:10px}
 .panelfoot{margin:10px 14px;padding:9px;background:var(--none-fill);font-size:10px;
   font-style:italic;color:var(--t-ink3);line-height:1.5}
 
+/* ---------- Impact Trace — an arrow overlay drawn on the grid itself on
+   edit, standard across every trainer ---------- */
+#impactOv{position:fixed;inset:0;pointer-events:none;z-index:65}
+.impact-arrow{stroke:var(--coach);stroke-width:2.5;fill:none}
+.impact-hit{outline:2px solid var(--coach);outline-offset:-2px}
+
 /* Inbox cards */
 .summary{margin:8px 14px;padding:6px 10px;background:var(--imp-fill);color:var(--imp-ink);
   font-size:10.5px;font-weight:700}
@@ -428,6 +434,8 @@ input.cell[type=date]{font-family:var(--ui);font-size:10px}
  *   SCOPE_PICKERS — { [dim]: { chipLabel, tabs:[{key,label,multi,members}] } }
  *                  the scope bar's clickable chips (see the SCOPE PICKER
  *                  section below for the full content/engine contract)
+ *   IMPACT_GRAPH — { [key]: [key,...] } downstream adjacency for the
+ *                  Impact Trace arrow overlay (see that section below)
  *
  * processFlowHTML(id, title, subtitle, steps) is a pure render piece (like
  * cellLegend()) — content.js calls it directly wherever a collapsible
@@ -901,6 +909,68 @@ function toggleProcessFlow(id){
 	S.flows = S.flows || {};
 	S.flows[id] = !S.flows[id];
 	render();
+}
+
+/* ==================================================================
+   IMPACT TRACE — an arrow overlay drawn directly on the grid when a
+   trainee edits a cell, pointing at every other row/cell that changed
+   as a result. Automatic (fires on edit commit), scoped to whatever's
+   actually on screen right now — a row on a different tab simply won't
+   be found by querySelector, so nothing is drawn for it, which is the
+   point: this never reaches across tabs/grids. Separate from the
+   Explainability panel, which stays prose/arithmetic, on demand.
+
+   Content.js must supply:
+     IMPACT_GRAPH — { [key]: [key,...] } downstream adjacency
+   and tag both the edited row/cell AND every row/cell IMPACT_GRAPH can
+   name as a target with data-impact="<key>" (same key values used in
+   IMPACT_GRAPH), then call triggerImpactTrace(key) from wherever a cell
+   edit commits. Keys are looked up fresh after every render — never a
+   stored DOM reference — since render() rebuilds the grid each time.
+   ================================================================== */
+const IMPACT_TRACE_MS = 2600;
+let impactTraceTimer = null;
+function triggerImpactTrace(rootKey){
+	S.impactTrace = { root: rootKey };
+	render();
+}
+function clearImpactTrace(){
+	S.impactTrace = null;
+	const ov = document.getElementById("impactOv"); if(ov) ov.remove();
+	document.querySelectorAll(".impact-hit").forEach(el=>el.classList.remove("impact-hit"));
+}
+function renderImpactArrows(){
+	const old = document.getElementById("impactOv"); if(old) old.remove();
+	if(impactTraceTimer){ clearTimeout(impactTraceTimer); impactTraceTimer = null; }
+	if(!S.impactTrace || !S.impactTrace.root) return;
+	const root = S.impactTrace.root;
+	const rootEl = document.querySelector(`[data-impact="${root}"]`);
+	const targets = (IMPACT_GRAPH[root] || []).map(key=>({ key, el:document.querySelector(`[data-impact="${key}"]`) }))
+		.filter(t=>t.el);
+	if(!rootEl || !targets.length) return;
+	const svgNS = "http://www.w3.org/2000/svg";
+	const ov = document.createElementNS(svgNS, "svg");
+	ov.id = "impactOv";
+	ov.setAttribute("width", window.innerWidth);
+	ov.setAttribute("height", window.innerHeight);
+	ov.innerHTML = `<defs><marker id="impactArrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L6,3 L0,6 Z" style="fill:var(--coach)"></path></marker></defs>`;
+	const rootBox = rootEl.getBoundingClientRect();
+	targets.forEach(t=>{
+		const box = t.el.getBoundingClientRect();
+		const x1 = rootBox.right, y1 = rootBox.top + rootBox.height/2;
+		const x2 = box.left, y2 = box.top + box.height/2;
+		const curve = (x2-x1)*0.4;
+		const path = document.createElementNS(svgNS,"path");
+		path.setAttribute("class","impact-arrow");
+		path.setAttribute("marker-end","url(#impactArrowhead)");
+		path.setAttribute("d", `M ${x1} ${y1} C ${x1+curve} ${y1}, ${x2-curve} ${y2}, ${x2} ${y2}`);
+		ov.appendChild(path);
+		t.el.classList.add("impact-hit");
+	});
+	rootEl.classList.add("impact-hit");
+	document.body.appendChild(ov);
+	impactTraceTimer = setTimeout(clearImpactTrace, IMPACT_TRACE_MS);
 }
 
 </script>
