@@ -38,6 +38,19 @@ const SCOPE_PICKERS = {
 		{ key:"season", label:"Season", multi:false, members:["TODO Season A","TODO Season B"] }
 	]}
 };
+/* ---------- Persona Gate — picked once at launch, standard across every
+   trainer (see o9-shell.js's PERSONA GATE section). Tabs/subtabs tagged
+   with a key not in the chosen persona's list render disabled (greyed
+   out), never hidden. TODO: replace with this trainer's real personas
+   and which tab/subtab keys each one can use. ---------- */
+const PERSONAS = [
+	{ id:"planner", label:"Planner", desc:"TODO — what a Planner does in this trainer." },
+	{ id:"admin", label:"Admin", desc:"TODO — what an Admin does in this trainer." }
+];
+const PERSONA_TABS = {
+	planner: ["standard"],
+	admin: ["standard", "adminOnly"]
+};
 const PAGE_TITLE = { "workspace": ()=> "TODO — Workspace Title" };
 const PAGE_CHIP  = { "workspace": "Workspace" };
 
@@ -123,9 +136,10 @@ const ADMIN_PRESETS = [
    STATE
    ================================================================== */
 let S = null;
+let chosenPersona = null;
 function newRun(mode){
 	S = {
-		mode, screen:null, page:"workspace",
+		mode, screen:null, page:"workspace", persona:chosenPersona, subtab:"standard",
 		tourOpen:false, tourIdx:0, tourComplete:false,
 		coachExpanded:false, coachHint:null, firedHints:{},
 		side:null, sideCtx:null,
@@ -170,7 +184,7 @@ function render(){
 	app.innerHTML =
 		appbarHTML() +
 		'<div class="main">' + railLHTML() + pagesHTML() +
-		  '<div class="content">' + scopeHTML() + reportHeaderHTML() + planFlowHTML() +
+		  '<div class="content">' + scopeHTML() + reportHeaderHTML() + planFlowHTML() + subtabsHTML() +
 		    '<div class="workarea"><div class="gridwrap" id="gw">' + gridHTML() + '</div>' +
 		    sidePanelHTML() + '</div>' +
 		  '</div>' + railRHTML() +
@@ -215,6 +229,16 @@ function planFlowHTML(){
 		{ t:"TODO Stage E", s:"TODO — what happens here" }
 	]);
 }
+/* ---------- demo subtabs — proves out the Persona Gate pattern: the
+   "Admin Only" subtab is disabled (not hidden) unless the chosen
+   persona's PERSONA_TABS list includes "adminOnly". TODO: replace with
+   this trainer's real subtabs. ---------- */
+function subtabsHTML(){
+	return `<div class="subtabs">
+    <button class="tab ${S.subtab==="standard"?"on":""}" data-sub="standard">Standard</button>
+    <button class="tab ${S.subtab==="adminOnly"?"on":""}" data-sub="adminOnly" ${isPersonaTab("adminOnly")?"":"disabled"}>Admin Only</button>
+  </div>`;
+}
 function reportHeaderHTML(){
 	const open = S.inbox.filter(i=>!i.resolved).length;
 	return `<div class="rpthdr"><h1>${esc(PAGE_TITLE[S.page]())}</h1>
@@ -229,6 +253,10 @@ function reportHeaderHTML(){
 
 /* ---------- the one grid — TODO replace with this trainer's real columns ---------- */
 function gridHTML(){
+	if(S.subtab==="adminOnly"){
+		return `<div class="sec-hdr">ADMIN ONLY</div>
+    <p style="padding:14px;color:var(--t-ink2)">TODO — Admin-persona-only content. Reachable only when the chosen persona's PERSONA_TABS list includes "adminOnly" — the Standard subtab works the same for every persona.</p>`;
+	}
 	let h = misconceptionHTML("TODO — the mistake trainees predictably make here",
 		"TODO — why it looks right, and what's actually true. Replace with this trainer's real trap, placed above whichever field it applies to.") +
 	  `<div class="sec-hdr">TODO GRID TITLE</div>
@@ -312,6 +340,10 @@ function bindShell(){
 	app.querySelectorAll("[data-admin-exit]").forEach(b=>b.addEventListener("click", exitAdminScenario));
 	app.querySelectorAll("[data-scope-chip]").forEach(b=>b.addEventListener("click", ()=>openScopePicker(b.dataset.scopeChip, b)));
 	app.querySelectorAll("[data-flow-toggle]").forEach(b=>b.addEventListener("click", ()=>toggleProcessFlow(b.dataset.flowToggle)));
+	app.querySelectorAll("[data-sub]").forEach(b=>b.addEventListener("click", ()=>{
+		if(b.disabled) return;
+		S.subtab = b.dataset.sub; render();
+	}));
 	renderTour();
 	renderAdminModal();
 	renderAdminResults();
@@ -393,6 +425,19 @@ function screenReflection(){
 }
 
 /* ==================================================================
+   PERSONA SELECT — picked once, before mode (Guided/Challenge). See
+   o9-shell.js's PERSONA GATE section for personaSelectHTML()/isPersonaTab().
+   ================================================================== */
+function renderPersonaSelect(){
+	const d = screenEl("");
+	d.innerHTML = `<div class="wrapc">${personaSelectHTML()}</div>`;
+	d.querySelectorAll("[data-persona]").forEach(b=>b.addEventListener("click", ()=>{
+		chosenPersona = b.dataset.persona;
+		renderLaunch();
+	}));
+}
+
+/* ==================================================================
    LAUNCH
    ================================================================== */
 function renderLaunch(){
@@ -428,4 +473,4 @@ function renderLaunch(){
 /* ==================================================================
    INIT
    ================================================================== */
-document.addEventListener("DOMContentLoaded", renderLaunch);
+document.addEventListener("DOMContentLoaded", renderPersonaSelect);

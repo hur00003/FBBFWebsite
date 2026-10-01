@@ -119,7 +119,8 @@ button{font-family:inherit;font-size:inherit;cursor:pointer}
 .tab{border:0;background:none;padding:6px 14px 8px;font-size:12px;color:var(--p-icon);position:relative}
 .tab.on{color:var(--p-text);font-weight:700}
 .tab.on::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:2px;background:#000}
-.tab[disabled]{cursor:default}
+.tab[disabled]{cursor:not-allowed;color:var(--t-ink3);opacity:.5}
+.tab[disabled]:hover{color:var(--t-ink3)}
 .subtabs{display:flex;gap:4px;padding:6px 10px 0;border-bottom:1px solid var(--p-hair);flex:0 0 auto}
 
 .workarea{flex:1;display:flex;min-height:0}
@@ -437,6 +438,9 @@ input.cell[type=date]{font-family:var(--ui);font-size:10px}
  *                  section below for the full content/engine contract)
  *   IMPACT_GRAPH — { [key]: [key,...] } downstream adjacency for the
  *                  Impact Trace arrow overlay (see that section below)
+ *   PERSONAS     — [{ id, label, desc }] picked once at launch
+ *   PERSONA_TABS — { [personaId]: [tabKey,...] } which tab/subtab keys
+ *                  that persona can use (see the PERSONA GATE section)
  *
  * processFlowHTML(id, title, subtitle, steps) and misconceptionHTML(title,
  * body) are pure render pieces (like cellLegend()) — content.js calls them
@@ -984,6 +988,46 @@ function renderImpactArrows(){
 	rootEl.classList.add("impact-hit");
 	document.body.appendChild(ov);
 	impactTraceTimer = setTimeout(clearImpactTrace, IMPACT_TRACE_MS);
+}
+
+/* ==================================================================
+   PERSONA GATE — picked once at launch, before mode (Guided/Challenge)
+   is even chosen. For the rest of that run, tabs/subtabs that don't
+   apply to the chosen persona are greyed out and disabled, never
+   hidden — the trainee can still see the full shape of the tool, just
+   not act outside their own persona's lane.
+
+   Fully generic: the engine has no idea what a "persona" or a tab KEY
+   means. Content.js supplies both and decides, per tab/subtab button
+   it renders, whether to add the disabled attribute — this piece only
+   answers the yes/no question and renders the picker screen itself.
+
+   Content.js must supply:
+     PERSONAS     — [{ id, label, desc }]
+     PERSONA_TABS — { [personaId]: [tabKey,...] } — the tab/subtab keys
+                    that persona can use. A key that appears in NO
+                    persona's list is treated as persona-agnostic
+                    chrome and always stays enabled.
+   and seed S.persona = null in newRun(), setting it once via
+   choosePersona(id) from whatever screen calls personaSelectHTML() —
+   typically a step before the existing mode-select screen. Every
+   <button class="tab" ...> (or subtab) a trainer renders should add
+   ${isPersonaTab("key")?"":"disabled"} itself; this piece never
+   touches trainer markup directly.
+   ================================================================== */
+function isPersonaTab(key){
+	if(!S || !S.persona || !PERSONA_TABS[S.persona]) return true;
+	return PERSONA_TABS[S.persona].includes(key);
+}
+function personaSelectHTML(){
+	return `<div style="font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--coach)">PLANNING TRAINER</div>
+    <h1 style="margin:10px 0 18px">Who are you running this as?</h1>
+    <p style="font-size:13px;color:var(--t-ink2);line-height:1.6;max-width:600px;margin-bottom:26px">Your persona decides which tabs you can act in for this run — anything outside your lane stays visible, just greyed out, so you can see the whole tool without being able to touch someone else's work.</p>
+    <div class="paths" style="grid-template-columns:repeat(${PERSONAS.length},1fr);max-width:${PERSONAS.length*260}px">` +
+	  PERSONAS.map(p=>`<div class="path"><div class="top" style="background:var(--coach)"></div>
+        <h3>${esc(p.label.toUpperCase())}</h3><p class="q">${esc(p.desc)}</p>
+        <button class="btn pri" data-persona="${esc(p.id)}">Continue as ${esc(p.label)}</button></div>`).join("") +
+	  `</div>`;
 }
 
 </script>
