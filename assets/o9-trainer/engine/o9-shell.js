@@ -18,6 +18,13 @@
  *   KPI_OPTIONS  — [{ id, name, desc, fn() }] scoring functions
  *   KPI_WEIGHTS  — { kpi1..N: number } weight per KPI_OPTIONS index
  *   TIER_BANDS   — [{ min, tier, label }] sorted high to low
+ *   ADMIN_PRESETS — [{ name, difficulty, desc, hint, targets:[{kpi,dir,value}] }]
+ *                  quick-start scenarios for the Admin Modal (see that
+ *                  section below for the full content/engine contract)
+ *   ADMIN_KPIS   — [{ id, label, fn() }] raw-metric catalog the Admin
+ *                  Modal's Target KPI dropdown picks from — distinct from
+ *                  KPI_OPTIONS, which are this trainer's weighted 0-100
+ *                  Results/Tier factors, not raw counts/values
  *   render()     — content's shell re-render function (engine calls it
  *                  after coach/tour interactions change S)
  *   fireHint(id, opts) / skipTour()
@@ -178,4 +185,192 @@ function tierMediaHTML(src, tier){
 	return isVideo
 		? `<video class="mascot" src="${src}" autoplay loop muted playsinline></video>`
 		: `<img class="mascot" alt="Tier ${tier} celebration" src="${src}">`;
+}
+
+/* ==================================================================
+   ADMIN MODAL — a scenario/challenge builder, standard across every
+   trainer. Generic given content-supplied ADMIN_PRESETS / ADMIN_KPIS
+   (see the top-of-file header comment). Independent of the KPI_OPTIONS /
+   TIER_BANDS scoring system: that one drives the Finish -> Results ->
+   Reflection arc every trainer always has; this one is an optional,
+   repeatable practice layer a trainee can start/exit/retry mid-run
+   without ending the run, scored against specific target KPI values
+   instead of a weighted readiness percentage.
+
+   Content.js must seed its initial state (newRun()) with:
+     S.admin = { open:false, presetIdx:null, name:"Custom Scenario",
+                 difficulty:"medium", desc:"", hint:"", targets:[] }
+     S.activeScenario = null
+   and call render()'s existing self-mounted-overlay pattern: add
+   renderAdminModal() and renderAdminResults() wherever renderTour() is
+   already called. A trainer that wants the Target Tracker visible needs
+   one more small, trainer-owned side-panel case (same shape as its
+   existing inbox panel) that wraps adminTargetsHTML() in panelHead().
+   ================================================================== */
+const ADMIN_DIFFICULTY_TOL = { easy:.15, medium:.05, hard:.02 };
+const ADMIN_DIFFICULTY_LABEL = { easy:"Easy (±15%)", medium:"Medium (±5%)", hard:"Hard (±2%)" };
+
+function openAdminModal(){
+	S.admin = { open:true, presetIdx:null, name:"Custom Scenario", difficulty:"medium",
+		desc:"", hint:"", targets:[ newAdminTarget() ] };
+	render();
+}
+function closeAdminModal(){ S.admin.open = false; render(); }
+function newAdminTarget(){ return { kpi:ADMIN_KPIS[0].id, dir:"below", value:0 }; }
+function selectAdminPreset(i){
+	const p = ADMIN_PRESETS[i];
+	S.admin.presetIdx = i;
+	S.admin.name = p.name; S.admin.difficulty = p.difficulty;
+	S.admin.desc = p.desc; S.admin.hint = p.hint;
+	S.admin.targets = p.targets.map(t=>({ kpi:t.kpi, dir:t.dir, value:t.value }));
+	render();
+}
+function addAdminTarget(){ S.admin.targets.push(newAdminTarget()); render(); }
+function removeAdminTarget(i){ S.admin.targets.splice(i,1); render(); }
+function startAdminChallenge(){
+	const tol = ADMIN_DIFFICULTY_TOL[S.admin.difficulty] ?? .05;
+	const targets = S.admin.targets.map(t=>{
+		const k = ADMIN_KPIS.find(x=>x.id===t.kpi);
+		return { kpi:t.kpi, dir:t.dir, value:t.value, label:k.label, tol };
+	});
+	S.activeScenario = { name:S.admin.name, difficulty:S.admin.difficulty,
+		desc:S.admin.desc, hint:S.admin.hint, targets };
+	S.admin.open = false;
+	S.side = "admin";
+	render();
+}
+function exitAdminScenario(){
+	if(!confirm("Exit the current challenge? Progress stays, but the tracker will close.")) return;
+	S.activeScenario = null;
+	if(S.side==="admin") S.side = null;
+	render();
+}
+function evalAdminTarget(t){
+	const v = ADMIN_KPIS.find(x=>x.id===t.kpi).fn();
+	const slack = t.tol * (Math.abs(t.value) || 1);
+	const met = t.dir==="below" ? v <= t.value + slack : v >= t.value - slack;
+	return { current:v, met };
+}
+function computeAdminScore(){
+	if(!S.activeScenario) return 0;
+	let sum = 0;
+	S.activeScenario.targets.forEach(t=>{
+		const ev = evalAdminTarget(t);
+		if(ev.met){ sum += 100; return; }
+		const dev = t.value!==0 ? Math.abs(ev.current-t.value)/Math.abs(t.value) : (ev.current===0?0:1);
+		sum += Math.max(0, 100-dev*100)*0.7;
+	});
+	return Math.round(sum / S.activeScenario.targets.length);
+}
+function getAdminScoreBadge(score){
+	if(score<60) return { emoji:"📋", caption:"Needs another pass — revisit the fundamentals." };
+	if(score<80) return { emoji:"🧢", caption:"Solid progress — keep shaping the plan!" };
+	if(score<=90) return { emoji:"🎯", caption:"Scenario targets mostly hit — nice work." };
+	return { emoji:"🏆", caption:"Every target hit — scenario mastered." };
+}
+function submitAdminScenario(){
+	if(!S.activeScenario) return;
+	S.admin.resultsOpen = true;
+	render();
+}
+
+/* ---------- adminTargetsHTML() — the tracker's per-target list + Submit
+   Plan button. A pure render piece: content.js wraps it in panelHead()
+   inside its own side-panel case, same as inboxHTML() does. ---------- */
+function adminTargetsHTML(){
+	if(!S.activeScenario) return "";
+	const sc = S.activeScenario;
+	let h = sc.hint ? `<div class="rulebox" style="background:var(--t-panel)"><b>Hint:</b> ${esc(sc.hint)}</div>` : "";
+	sc.targets.forEach(t=>{
+		const ev = evalAdminTarget(t);
+		h += `<div class="target-item ${ev.met?"hit":"miss"}">
+      <div class="ti-header"><span class="ti-label">${esc(t.label)}</span>
+      <span class="ti-badge ${ev.met?"hit":"miss"}">${ev.met?"✓":"✗"}</span></div>
+      <div class="ti-values">Current: ${f1(ev.current)}</div></div>`;
+	});
+	h += `<button class="btn dark" style="width:100%;margin-top:4px" data-admin-submit>✓ Submit Plan</button>`;
+	return h;
+}
+
+/* ---------- renderAdminModal() / renderAdminResults() — self-mounted
+   overlays, same pattern as renderTour(): called every render(), they
+   remove and rebuild their own DOM node keyed off S.admin. ---------- */
+function renderAdminModal(){
+	const old = document.getElementById("adminOv"); if(old) old.remove();
+	if(!S.admin || !S.admin.open) return;
+	const ov = document.createElement("div");
+	ov.id = "adminOv"; ov.className = "overlay"; ov.setAttribute("role","dialog");
+	ov.setAttribute("aria-modal","true"); ov.setAttribute("aria-label","Scenario builder");
+	ov.innerHTML = `<div class="modal admin-modal"><div class="bar"></div><div class="body">
+    <h3>⚙ Scenario Builder</h3>
+    <p>Build a scored scenario spanning this trainer's workspace, or pick a preset and go.</p>
+    <div class="sec-hdr t">★ QUICK PRESETS</div>
+    <div class="preset-grid">${ADMIN_PRESETS.map((p,i)=>`
+      <div class="preset-card ${S.admin.presetIdx===i?"selected":""}" data-preset="${i}" role="button" tabindex="0">
+        <span class="preset-badge ${esc(p.difficulty)}">${esc(p.difficulty)}</span>
+        <h4>${esc(p.name)}</h4><p>${esc(p.desc)}</p>
+      </div>`).join("")}</div>
+    <div class="sec-hdr t" style="margin-top:14px">SCENARIO DETAILS</div>
+    <div class="admform">
+      <label>Scenario Name<input id="admName" type="text" value="${esc(S.admin.name)}"></label>
+      <label>Difficulty<select id="admDiff">${Object.keys(ADMIN_DIFFICULTY_LABEL).map(k=>
+        `<option value="${k}" ${S.admin.difficulty===k?"selected":""}>${ADMIN_DIFFICULTY_LABEL[k]}</option>`).join("")}</select></label>
+    </div>
+    <div class="admform">
+      <label>Planner Instructions<textarea id="admDesc">${esc(S.admin.desc)}</textarea></label>
+      <label>Hint<textarea id="admHint">${esc(S.admin.hint)}</textarea></label>
+    </div>
+    <div class="sec-hdr t" style="margin-top:14px">🎯 TARGET KPIS</div>
+    <table class="target-table"><thead><tr><th>KPI</th><th>Direction</th><th>Target</th><th></th></tr></thead>
+    <tbody>${S.admin.targets.map((t,i)=>`
+      <tr>
+        <td><select data-tgt-kpi="${i}">${ADMIN_KPIS.map(k=>
+          `<option value="${k.id}" ${k.id===t.kpi?"selected":""}>${esc(k.label)}</option>`).join("")}</select></td>
+        <td><select data-tgt-dir="${i}"><option value="below" ${t.dir==="below"?"selected":""}>At or Below</option>
+          <option value="above" ${t.dir==="above"?"selected":""}>At or Above</option></select></td>
+        <td><input data-tgt-val="${i}" type="number" value="${t.value}"></td>
+        <td><button class="btn ghost" data-tgt-del="${i}" aria-label="Remove target">✕</button></td>
+      </tr>`).join("")}</tbody></table>
+    <button class="btn" id="admAddTarget" style="width:100%;margin-top:8px">+ Add Target KPI</button>
+    <div class="foot" style="justify-content:flex-end">
+      <button class="btn" id="admCancel">Cancel</button>
+      <button class="btn dark" id="admStart">▶ Start Challenge</button>
+    </div>
+  </div></div>`;
+	document.body.appendChild(ov);
+	ov.querySelectorAll("[data-preset]").forEach(c=>c.addEventListener("click", ()=>selectAdminPreset(+c.dataset.preset)));
+	ov.querySelector("#admName").addEventListener("input", e=>{ S.admin.name = e.target.value; });
+	ov.querySelector("#admDiff").addEventListener("change", e=>{ S.admin.difficulty = e.target.value; });
+	ov.querySelector("#admDesc").addEventListener("input", e=>{ S.admin.desc = e.target.value; });
+	ov.querySelector("#admHint").addEventListener("input", e=>{ S.admin.hint = e.target.value; });
+	ov.querySelectorAll("[data-tgt-kpi]").forEach(s=>s.addEventListener("change", e=>{ S.admin.targets[+s.dataset.tgtKpi].kpi = e.target.value; }));
+	ov.querySelectorAll("[data-tgt-dir]").forEach(s=>s.addEventListener("change", e=>{ S.admin.targets[+s.dataset.tgtDir].dir = e.target.value; }));
+	ov.querySelectorAll("[data-tgt-val]").forEach(i=>i.addEventListener("input", e=>{ S.admin.targets[+i.dataset.tgtVal].value = parseFloat(e.target.value)||0; }));
+	ov.querySelectorAll("[data-tgt-del]").forEach(b=>b.addEventListener("click", ()=>removeAdminTarget(+b.dataset.tgtDel)));
+	ov.querySelector("#admAddTarget").addEventListener("click", addAdminTarget);
+	ov.querySelector("#admCancel").addEventListener("click", closeAdminModal);
+	ov.querySelector("#admStart").addEventListener("click", startAdminChallenge);
+}
+function renderAdminResults(){
+	const old = document.getElementById("adminResOv"); if(old) old.remove();
+	if(!S.admin || !S.admin.resultsOpen || !S.activeScenario) return;
+	const sc = S.activeScenario;
+	const score = computeAdminScore();
+	const badge = getAdminScoreBadge(score);
+	const ov = document.createElement("div");
+	ov.id = "adminResOv"; ov.className = "overlay"; ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true");
+	ov.innerHTML = `<div class="modal"><div class="bar"></div><div class="body">
+    <div class="eyebrow">${esc(sc.name.toUpperCase())}</div>
+    <h3>${badge.emoji} ${score} <span style="font-size:13px;color:var(--t-ink3);font-weight:400">/ 100</span></h3>
+    <p>${esc(badge.caption)}</p>
+    <div class="checks" style="grid-template-columns:1fr 1fr">` +
+		sc.targets.map(t=>{ const ev = evalAdminTarget(t);
+			return `<div class="check" style="border-left-color:var(--${ev.met?"chase-ink":"cancel-ink"})">
+        <div class="hd"><h3 style="font-size:12px">${esc(t.label)}</h3></div>
+        <div class="desc">Current: ${f1(ev.current)}</div></div>`; }).join("") +
+	`</div>
+    <div class="foot" style="justify-content:flex-end"><button class="btn pri" id="admResClose">Close</button></div>
+  </div></div>`;
+	document.body.appendChild(ov);
+	ov.querySelector("#admResClose").addEventListener("click", ()=>{ S.admin.resultsOpen = false; render(); });
 }

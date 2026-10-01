@@ -83,6 +83,23 @@ const KPI_OPTIONS = [
 	  } }
 ];
 
+/* ---------- Admin Modal — scenario/challenge builder, standard across
+   every trainer (see o9-shell.js's ADMIN MODAL section for the engine
+   side). ADMIN_KPIS is the catalog of raw metrics selectable as a Target
+   KPI — distinct from KPI_OPTIONS above, which are this trainer's
+   weighted 0-100 factors for the Results/Tier scoring.
+   TODO: replace with this trainer's real metrics and preset scenarios. ---------- */
+const ADMIN_KPIS = [
+	{ id:"unshaped", label:"Unshaped Items",
+	  fn:function(){ return S.items.filter(i=>i.ovrd.value==null).length; } }
+];
+const ADMIN_PRESETS = [
+	{ name:"Week 1: Clear the Queue", difficulty:"easy",
+	  desc:"TODO — preset scenario description.",
+	  hint:"TODO — a hint shown in the target tracker.",
+	  targets:[ { kpi:"unshaped", dir:"below", value:0 } ] }
+];
+
 /* ==================================================================
    STATE
    ================================================================== */
@@ -94,7 +111,9 @@ function newRun(mode){
 		coachExpanded:false, coachHint:null, firedHints:{},
 		side:null, sideCtx:null,
 		items: clone(ITEMS_SEED),
-		inbox: clone(EXCEPTIONS)
+		inbox: clone(EXCEPTIONS),
+		admin: { open:false, presetIdx:null, name:"Custom Scenario", difficulty:"medium", desc:"", hint:"", targets:[] },
+		activeScenario: null
 	};
 	S.items.forEach(it=>{ it.ovrd = { value:null }; });
 	return S;
@@ -163,6 +182,9 @@ function reportHeaderHTML(){
 	const open = S.inbox.filter(i=>!i.resolved).length;
 	return `<div class="rpthdr"><h1>${esc(PAGE_TITLE[S.page]())}</h1>
     <div class="toolbar">
+      ${S.activeScenario ? `<span class="pill" style="background:var(--act-fill);color:var(--act-ink)">${esc(S.activeScenario.name)}</span>
+      <button class="tool" id="btnTargets">🎯 Targets</button>` : ""}
+      <button class="tool" id="btnAdmin">⚙ Scenario Challenge</button>
       <button class="tool" id="btnInbox">Exception Inbox${open?" · "+open:""}</button>
       <button class="tool primary" id="btnFinish">Finish &amp; Score</button>
     </div></div>`;
@@ -187,7 +209,17 @@ function gridHTML(){
    ================================================================== */
 function sidePanelHTML(){
 	if(S.side==="inbox") return `<aside class="side inbox open" role="complementary">${inboxHTML()}</aside>`;
+	if(S.side==="admin") return `<aside class="side open" role="complementary">${adminTrackerHTML()}</aside>`;
 	return `<aside class="side"></aside>`;
+}
+/* ---------- Admin Modal's target tracker — a trainer-owned side panel
+   that composes panelHead() (engine) with adminTargetsHTML() (engine),
+   same pattern inboxHTML() uses. ---------- */
+function adminTrackerHTML(){
+	if(!S.activeScenario) return "";
+	return panelHead("ACTIVE CHALLENGE", S.activeScenario.name, S.activeScenario.desc) +
+	  `<div class="sc">${adminTargetsHTML()}
+      <button class="btn ghost" style="margin:4px 14px" data-admin-exit>Exit challenge</button></div>`;
 }
 function inboxHTML(){
 	const items = S.inbox;
@@ -233,7 +265,15 @@ function bindShell(){
 	const bI = app.querySelector("#btnInbox");
 	if(bI) bI.addEventListener("click", ()=>{ S.side = S.side==="inbox" ? null : "inbox"; render(); });
 	app.querySelectorAll("[data-close-side]").forEach(b=>b.addEventListener("click",()=>{ S.side=null; render(); }));
+	const bA = app.querySelector("#btnAdmin");
+	if(bA) bA.addEventListener("click", openAdminModal);
+	const bT = app.querySelector("#btnTargets");
+	if(bT) bT.addEventListener("click", ()=>{ S.side = S.side==="admin" ? null : "admin"; render(); });
+	app.querySelectorAll("[data-admin-submit]").forEach(b=>b.addEventListener("click", submitAdminScenario));
+	app.querySelectorAll("[data-admin-exit]").forEach(b=>b.addEventListener("click", exitAdminScenario));
 	renderTour();
+	renderAdminModal();
+	renderAdminResults();
 }
 function beginEdit(td){
 	const [id,field,m] = td.dataset.edit.split("|");
