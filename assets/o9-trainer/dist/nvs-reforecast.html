@@ -138,6 +138,12 @@ tr.grouprow td{background:var(--p-fill);font-size:10px;font-weight:700;letter-sp
   text-transform:uppercase;border-right:0}
 tr.grouprow.act td{background:var(--act-fill);color:var(--act-ink)}
 tr.grouprow.none td{background:var(--none-fill);color:var(--none-ink)}
+/* ---------- subgrouprow — a measure-category bar nested inside a
+   grid-container's grouprow (e.g. one Style-Color's rows bundled into
+   "FORECAST" / "RESULTING PLAN" / "INVENTORY KPIS"). One tier lighter
+   than grouprow, since it nests inside one. ---------- */
+tr.subgrouprow td{background:var(--t-panel);color:var(--t-ink2);font-size:9.5px;font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;border-top:1px solid var(--p-hair);border-right:0}
 td.calc{background:var(--c-calc)}
 td.edit{background:var(--c-edit);cursor:text}
 td.edit:hover{outline:2px solid var(--edit-hover);outline-offset:-2px}
@@ -1371,30 +1377,41 @@ function gridB(){
     S.rebuy.filter(r=>r.midlevel===grp.ml).forEach(r=>{
       const L = r.locked;
       const ssn = g.reduce((s,i)=> s + rebuyConstr(r, mk(i)), 0);
-      const rows = [
-        { lab:"Net Sls Fcst U (Basis)", cls:"mute",
-          cell:i=>`<td class="n calc mute">${fU(r.basis[mk(i)])}</td>` },
-        { lab:"Net Sls Fcst U Adj %",
-          cell:i=> ec(r.id,"adjPct",mk(i), r.adjPct[mk(i)], fP, L) },
-        { lab:"Net Sls Fcst U Ovrd",
-          cell:i=> ec(r.id,"ovrd",mk(i), r.ovrd[mk(i)], fU, L) },
-        { lab:"Net Sls U Constr (WF)", total:fU(ssn),
-          cell:i=>`<td class="n calc expl" data-expl="rebuy|${r.id}|${mk(i)}" tabindex="0"
-                   style="font-weight:700">${fU(rebuyConstr(r,mk(i)))}</td>` },
-        { lab:"Net Sls MSRP Deg % Ovrd",
-          cell:i=> ec(r.id,"degPct",mk(i), r.degPct[mk(i)], v=> v==null?"":fPc(v), L, "deg") },
-        { lab:"Receipt U Ovrd",
-          cell:i=> ec(r.id,"receiptOvrd",mk(i), r.receiptOvrd[mk(i)], fU, L) },
-        { lab:"aWOS (WF)", ital:true,
-          cell:i=>`<td class="n ital expl" data-expl="awos|${r.id}|${mk(i)}" tabindex="0">${f1(rebuyAwos(r,mk(i)))}</td>` }
+      const sections = [
+        { name:"FORECAST", rows:[
+          { lab:"Net Sls Fcst U (Basis)", cls:"mute",
+            cell:i=>`<td class="n calc mute">${fU(r.basis[mk(i)])}</td>` },
+          { lab:"Net Sls Fcst U Adj %",
+            cell:i=> ec(r.id,"adjPct",mk(i), r.adjPct[mk(i)], fP, L) },
+          { lab:"Net Sls Fcst U Ovrd",
+            cell:i=> ec(r.id,"ovrd",mk(i), r.ovrd[mk(i)], fU, L) }
+        ]},
+        { name:"RESULTING PLAN", rows:[
+          { lab:"Net Sls U Constr (WF)", total:fU(ssn),
+            cell:i=>`<td class="n calc expl" data-expl="rebuy|${r.id}|${mk(i)}" tabindex="0"
+                     style="font-weight:700">${fU(rebuyConstr(r,mk(i)))}</td>` },
+          { lab:"Net Sls MSRP Deg % Ovrd",
+            cell:i=> ec(r.id,"degPct",mk(i), r.degPct[mk(i)], v=> v==null?"":fPc(v), L, "deg") },
+          { lab:"Receipt U Ovrd",
+            cell:i=> ec(r.id,"receiptOvrd",mk(i), r.receiptOvrd[mk(i)], fU, L) }
+        ]},
+        { name:"INVENTORY KPIS", rows:[
+          { lab:"aWOS (WF)", ital:true,
+            cell:i=>`<td class="n ital expl" data-expl="awos|${r.id}|${mk(i)}" tabindex="0">${f1(rebuyAwos(r,mk(i)))}</td>` }
+        ]}
       ];
-      rows.forEach((row,ri)=>{
-        h += `<tr><td>${ri===0?"<b>"+esc(r.midlevel)+"</b>":""}</td>
-          <td>${ri===0?"<b>"+esc(r.styleColor)+"</b>":""}</td>
-          <th scope="row" class="${row.cls||""} ${row.ital?"ital":""}">${esc(row.lab)}</th>` +
-          g.map(i=>row.cell(i)).join("") +
-          `<td class="n" style="font-weight:${row.total?700:400}">${row.total||""}</td>` +
-          (ri===0 ? lockCellHTML(r) : "<td></td>") + `</tr>`;
+      let first = true;
+      sections.forEach(sec=>{
+        h += `<tr class="subgrouprow"><td colspan="${g.length+5}">${esc(sec.name)}</td></tr>`;
+        sec.rows.forEach((row,ri)=>{
+          h += `<tr><td>${ri===0?"<b>"+esc(r.midlevel)+"</b>":""}</td>
+            <td>${ri===0?"<b>"+esc(r.styleColor)+"</b>":""}</td>
+            <th scope="row" class="${row.cls||""} ${row.ital?"ital":""}">${esc(row.lab)}</th>` +
+            g.map(i=>row.cell(i)).join("") +
+            `<td class="n" style="font-weight:${row.total?700:400}">${row.total||""}</td>` +
+            (first ? lockCellHTML(r) : "<td></td>") + `</tr>`;
+          first = false;
+        });
       });
       if(r.duplicateReceipt)
         h += `<tr><td colspan="${g.length+5}" style="background:var(--cancel-fill);color:var(--cancel-ink);font-size:10.5px">
@@ -1417,29 +1434,41 @@ function gridC(){
     const ssnTI = g.reduce((s,i)=> s + (w[mk(i)].ti||0), 0);
     const ssnCo = g.reduce((s,i)=> s + (w[mk(i)].constr||0), 0);
     h += `<tr class="grouprow"><td colspan="${g.length+5}">CLOSEOUT · ${esc(c.code)} — ${esc(c.midlevel)}</td></tr>`;
-    const rows = [
-      { lab:"Transfer In U (WF)", total:fU(ssnTI), cell:i=> ec(c.id,"transferIn",mk(i), c.transferIn[mk(i)], fU, L) },
-      { lab:"Total Avail Inv U (WF)", cell:i=>`<td class="n calc expl" data-expl="ph|${c.id}|${mk(i)}" tabindex="0">${fU(w[mk(i)].avail)}</td>` },
-      { lab:"Net Sls Fcst U Ovrd", cell:i=> ec(c.id,"ovrd",mk(i), c.ovrd[mk(i)], fU, L) },
-      { lab:"Net Sls U Constr (WF)", total:fU(ssnCo), cell:i=>{
-          const t = w[mk(i)];
-          return `<td class="n ${t.truncated?"constr":"calc"} expl" data-expl="ph|${c.id}|${mk(i)}" tabindex="0" style="font-weight:700">
-            ${fU(t.constr)}${t.truncated?'<span class="flagtxt">CAPPED</span>':""}</td>`; } },
-      { lab:"Net Sls AUR $ (WF)", cell:i=> ec(c.id,"aur",mk(i), c.aur[mk(i)], f2, L) },
-      { lab:"Net Sls AUC $ (WF)", cell:i=> ec(c.id,"auc",mk(i), c.auc[mk(i)], f2, L) },
-      { lab:"Net Sls MSRP Deg % Ovrd", cell:i=> ec(c.id,"degPct",mk(i), c.degPct[mk(i)], v=>v==null?"":fPc(v), L, "deg") },
-      { lab:"EOP U (WF)", cell:i=>`<td class="n calc">${fU(w[mk(i)].eop)}</td>` }
+    const sections = [
+      { name:"SUPPLY", rows:[
+        { lab:"Transfer In U (WF)", total:fU(ssnTI), cell:i=> ec(c.id,"transferIn",mk(i), c.transferIn[mk(i)], fU, L) },
+        { lab:"Total Avail Inv U (WF)", cell:i=>`<td class="n calc expl" data-expl="ph|${c.id}|${mk(i)}" tabindex="0">${fU(w[mk(i)].avail)}</td>` }
+      ]},
+      { name:"RESULTING PLAN", rows:[
+        { lab:"Net Sls Fcst U Ovrd", cell:i=> ec(c.id,"ovrd",mk(i), c.ovrd[mk(i)], fU, L) },
+        { lab:"Net Sls U Constr (WF)", total:fU(ssnCo), cell:i=>{
+            const t = w[mk(i)];
+            return `<td class="n ${t.truncated?"constr":"calc"} expl" data-expl="ph|${c.id}|${mk(i)}" tabindex="0" style="font-weight:700">
+              ${fU(t.constr)}${t.truncated?'<span class="flagtxt">CAPPED</span>':""}</td>`; } },
+        { lab:"Net Sls AUR $ (WF)", cell:i=> ec(c.id,"aur",mk(i), c.aur[mk(i)], f2, L) },
+        { lab:"Net Sls AUC $ (WF)", cell:i=> ec(c.id,"auc",mk(i), c.auc[mk(i)], f2, L) },
+        { lab:"Net Sls MSRP Deg % Ovrd", cell:i=> ec(c.id,"degPct",mk(i), c.degPct[mk(i)], v=>v==null?"":fPc(v), L, "deg") }
+      ]},
+      { name:"INVENTORY KPIS", rows:[
+        { lab:"EOP U (WF)", cell:i=>`<td class="n calc">${fU(w[mk(i)].eop)}</td>` }
+      ]}
     ];
-    rows.forEach((row,ri)=>{
-      h += `<tr><td>${ri===0?"<b>"+esc(c.midlevel)+"</b>":""}</td>
-        <td>${ri===0?"<b>"+esc(c.code)+"</b>":""}</td>
-        <th scope="row">${esc(row.lab)}</th>` +
-        g.map(i=>row.cell(i)).join("") +
-        `<td class="n" style="font-weight:${row.total?700:400}">${row.total||""}</td>` +
-        (ri===0 ? lockCellHTML(c) : "<td></td>") + `</tr>`;
+    let first = true;
+    sections.forEach(sec=>{
+      h += `<tr class="subgrouprow"><td colspan="${g.length+5}">${esc(sec.name)}</td></tr>`;
+      sec.rows.forEach((row,ri)=>{
+        h += `<tr><td>${ri===0?"<b>"+esc(c.midlevel)+"</b>":""}</td>
+          <td>${ri===0?"<b>"+esc(c.code)+"</b>":""}</td>
+          <th scope="row">${esc(row.lab)}</th>` +
+          g.map(i=>row.cell(i)).join("") +
+          `<td class="n" style="font-weight:${row.total?700:400}">${row.total||""}</td>` +
+          (first ? lockCellHTML(c) : "<td></td>") + `</tr>`;
+        first = false;
+      });
     });
     /* Transfer Out Date — single-value editable, spec §4 Grid C */
-    h += `<tr><td></td><td></td><th scope="row">Transfer Out Date</th>
+    h += `<tr class="subgrouprow"><td colspan="${g.length+5}">STATUS</td></tr>
+      <tr><td></td><td></td><th scope="row">Transfer Out Date</th>
       <td colspan="${g.length+1}">` +
       (L ? `<span class="lockcell" style="padding:3px 6px">${esc(c.transferOutDate||"")}</span>`
          : `<input class="rationale" style="min-height:0;width:170px;margin:0" type="date"
@@ -1463,24 +1492,35 @@ function gridD(){
   S.closeout.forEach(c=>{
     const w = closeoutWalk(c), L = c.locked;
     const sel = S.selectedPH === c.id;
-    const rows = [
-      { lab:"Transfer In U (WF)", cell:i=> ec(c.id,"transferIn",mk(i), c.transferIn[mk(i)], fU, L) },
-      { lab:"Net Sls U Constr (WF)", cell:i=>{ const t=w[mk(i)];
-          return `<td class="n ${t.truncated?"constr":"calc"} expl" data-expl="ph|${c.id}|${mk(i)}" tabindex="0" style="font-weight:700">
-            ${fU(t.constr)}${t.truncated?'<span class="flagtxt">CAPPED</span>':""}</td>`; } },
-      { lab:"Net Sls AUR $ (WF)", cell:i=> ec(c.id,"aur",mk(i), c.aur[mk(i)], f2, L) },
-      { lab:"Net Sls AUC $ (WF)", cell:i=> ec(c.id,"auc",mk(i), c.auc[mk(i)], f2, L) },
-      { lab:"Total Avail Inv U (WF)", cell:i=>`<td class="n calc">${fU(w[mk(i)].avail)}</td>` },
-      { lab:"EOP U (WF)", cell:i=>`<td class="n calc">${fU(w[mk(i)].eop)}</td>` }
+    const sections = [
+      { name:"SUPPLY", rows:[
+        { lab:"Transfer In U (WF)", cell:i=> ec(c.id,"transferIn",mk(i), c.transferIn[mk(i)], fU, L) },
+        { lab:"Total Avail Inv U (WF)", cell:i=>`<td class="n calc">${fU(w[mk(i)].avail)}</td>` }
+      ]},
+      { name:"RESULTING PLAN", rows:[
+        { lab:"Net Sls U Constr (WF)", cell:i=>{ const t=w[mk(i)];
+            return `<td class="n ${t.truncated?"constr":"calc"} expl" data-expl="ph|${c.id}|${mk(i)}" tabindex="0" style="font-weight:700">
+              ${fU(t.constr)}${t.truncated?'<span class="flagtxt">CAPPED</span>':""}</td>`; } },
+        { lab:"Net Sls AUR $ (WF)", cell:i=> ec(c.id,"aur",mk(i), c.aur[mk(i)], f2, L) },
+        { lab:"Net Sls AUC $ (WF)", cell:i=> ec(c.id,"auc",mk(i), c.auc[mk(i)], f2, L) }
+      ]},
+      { name:"INVENTORY KPIS", rows:[
+        { lab:"EOP U (WF)", cell:i=>`<td class="n calc">${fU(w[mk(i)].eop)}</td>` }
+      ]}
     ];
-    rows.forEach((row,ri)=>{
-      h += `<tr ${sel?'style="outline:2px solid var(--coach);outline-offset:-2px"':""}>
-        <td>${ri===0?"⋯":""}</td><td>${ri===0?"EMEA":""}</td><td>${ri===0?"Nike Value Stores":""}</td>
-        <td>${ri===0?"<b>"+esc(c.midlevel)+"</b>":""}</td>
-        <td>${ri===0?"<b>"+esc(c.code)+"</b>":""}</td>
-        <th scope="row">${esc(row.lab)}</th>` +
-        g.map(i=>row.cell(i)).join("") +
-        (ri===0 ? lockCellHTML(c) : "<td></td>") + `</tr>`;
+    let first = true;
+    sections.forEach(sec=>{
+      h += `<tr class="subgrouprow"><td colspan="${g.length+7}">${esc(sec.name)}</td></tr>`;
+      sec.rows.forEach((row,ri)=>{
+        h += `<tr ${sel?'style="outline:2px solid var(--coach);outline-offset:-2px"':""}>
+          <td>${first?"⋯":""}</td><td>${first?"EMEA":""}</td><td>${first?"Nike Value Stores":""}</td>
+          <td>${ri===0?"<b>"+esc(c.midlevel)+"</b>":""}</td>
+          <td>${ri===0?"<b>"+esc(c.code)+"</b>":""}</td>
+          <th scope="row">${esc(row.lab)}</th>` +
+          g.map(i=>row.cell(i)).join("") +
+          (first ? lockCellHTML(c) : "<td></td>") + `</tr>`;
+        first = false;
+      });
     });
   });
   h += `</tbody></table>
