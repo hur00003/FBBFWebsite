@@ -918,7 +918,7 @@ function explHTML(){
       <div class="calcrow"><span>+ Transfer In U (WF)</span><b>${fU(w.ti)}</b></div>
       <div class="calcrow"><span>= Total Avail Inv U (WF)</span><b>${fU(w.avail)}</b></div>
       <div class="calcrow"><span>Final Net Sls Fcst U (your override)</span><b>${fU(w.fin)}</b></div>
-      <div class="calcrow"><span>Available inventory</span><b>${fU(w.avail)}</b></div>
+      <div class="calcrow"><span>= Net Sls U Constr (WF)</span><b>${fU(w.constr)}</b></div>
       <div class="sec-hdr t">THE RULE THAT CHANGED THE ANSWER</div>
       <div class="rulebox constr"><b>IF</b> Available Inventory &lt; Final Net Sales Fcst<br>
         <b>THEN</b> Net Sales is constrained to available inventory<br>
