@@ -135,6 +135,28 @@ button{font-family:inherit;font-size:inherit;cursor:pointer}
 .rstep.on .s{color:var(--act-ink)}
 .rsep{display:flex;align-items:center;color:var(--t-ink3);padding:0 2px}
 
+/* ---------- Process Flow — a collapsible step diagram, standard across
+   every trainer (e.g. "how this page's work flows end to end"). Distinct
+   from the ribbon above: the ribbon is the warm "where are we right now
+   in the month" position indicator; this is a reference diagram a
+   trainee expands to orient themselves, never a warm surface, and each
+   step can carry its own state (current / at-risk / default). ---------- */
+.procflow{margin:8px 10px}
+.procflow-hd{display:flex;align-items:center;gap:6px;border:0;background:none;
+  padding:4px 0;font-size:12px;font-weight:700;color:var(--t-ink)}
+.procflow-hd .chev{font-size:9px;color:var(--t-ink3)}
+.procflow-hd .sub{font-weight:400;color:var(--t-ink3)}
+.procflow-steps{display:flex;align-items:stretch;gap:0;margin-top:8px;flex-wrap:wrap}
+.pfstep{flex:1;min-width:150px;padding:8px 12px;background:var(--p-fill);color:var(--t-ink3);
+  border:1px solid var(--p-hair)}
+.pfstep .t{font-size:11px;font-weight:700}
+.pfstep .s{font-size:9.5px;margin-top:2px}
+.pfstep.on{background:var(--imp-ink);border-color:var(--imp-ink);color:#fff}
+.pfstep.on .t,.pfstep.on .s{color:#fff}
+.pfstep.warn{background:var(--cancel-fill);border-color:var(--cancel-ink);color:var(--cancel-ink)}
+.pfstep.warn .t,.pfstep.warn .s{color:var(--cancel-ink)}
+.pfsep{display:flex;align-items:center;justify-content:center;width:28px;color:var(--t-ink3);font-size:13px}
+
 /* ---------- grid ---------- */
 table.g{border-collapse:collapse;font-size:11px;width:100%}
 table.g th,table.g td{border-right:1px solid var(--p-hair);border-bottom:1px solid var(--p-hair2);

@@ -28,6 +28,11 @@
  *   SCOPE_PICKERS — { [dim]: { chipLabel, tabs:[{key,label,multi,members}] } }
  *                  the scope bar's clickable chips (see the SCOPE PICKER
  *                  section below for the full content/engine contract)
+ *
+ * processFlowHTML(id, title, subtitle, steps) is a pure render piece (like
+ * cellLegend()) — content.js calls it directly wherever a collapsible
+ * end-to-end step diagram belongs, no global config needed; see the
+ * PROCESS FLOW section below for the steps array shape and S.flows.
  *   render()     — content's shell re-render function (engine calls it
  *                  after coach/tour interactions change S)
  *   fireHint(id, opts) / skipTour()
@@ -454,4 +459,36 @@ function renderScopePicker(){
 	ov.querySelectorAll("[data-sp-member]").forEach(b=>b.addEventListener("click", ()=>toggleScopeMember(b.dataset.spMember)));
 	ov.querySelector("#spCancel").addEventListener("click", closeScopePicker);
 	ov.querySelector("#spApply").addEventListener("click", applyScopePicker);
+}
+
+/* ==================================================================
+   PROCESS FLOW — a collapsible step diagram, standard across every
+   trainer. Generic given a content-supplied steps array; purely a
+   reference/orientation piece (no scoring, no state beyond open/closed).
+   Distinct from the ribbon (warm "where are we in the month" position
+   indicator) — this shows an end-to-end process with per-step status.
+
+   Content.js must seed its initial state (newRun()) with:
+     S.flows = {}   — toggleProcessFlow(id) lazily adds entries; any id
+                      not yet present is treated as collapsed
+   and call toggleProcessFlow(id) from a click handler wired to
+   [data-flow-toggle] (see bindShell() precedent for other pieces).
+   ================================================================== */
+function processFlowHTML(id, title, subtitle, steps){
+	const open = !!(S.flows && S.flows[id]);
+	let h = `<div class="procflow"><button class="procflow-hd" data-flow-toggle="${id}" aria-expanded="${open}">
+    <span class="chev">${open?"▾":"▸"}</span>${esc(title)}
+    <span class="sub">— ${esc(subtitle)} — click to ${open?"collapse":"expand"}</span></button>`;
+	if(open){
+		h += `<div class="procflow-steps">` + steps.map((st,i)=>
+			`<div class="pfstep ${st.state||""}"><div class="t">${esc(st.t)}</div><div class="s">${esc(st.s)}</div></div>` +
+			(i<steps.length-1 ? `<div class="pfsep">→</div>` : "")
+		).join("") + `</div>`;
+	}
+	return h + `</div>`;
+}
+function toggleProcessFlow(id){
+	S.flows = S.flows || {};
+	S.flows[id] = !S.flows[id];
+	render();
 }

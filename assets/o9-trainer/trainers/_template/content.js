@@ -127,7 +127,8 @@ function newRun(mode){
 		activeScenario: null,
 		scope: Object.fromEntries(Object.keys(SCOPE_PICKERS).map(dim=>
 			[dim, { tab:SCOPE_PICKERS[dim].tabs[0].key, selected:[SCOPE_PICKERS[dim].tabs[0].members[0]] }])),
-		scopePicker: { open:false, dim:null, tab:null, draft:[], x:0, y:0 }
+		scopePicker: { open:false, dim:null, tab:null, draft:[], x:0, y:0 },
+		flows: {}
 	};
 	S.items.forEach(it=>{ it.ovrd = { value:null }; });
 	return S;
@@ -160,7 +161,7 @@ function render(){
 	app.innerHTML =
 		appbarHTML() +
 		'<div class="main">' + railLHTML() + pagesHTML() +
-		  '<div class="content">' + scopeHTML() + reportHeaderHTML() +
+		  '<div class="content">' + scopeHTML() + reportHeaderHTML() + planFlowHTML() +
 		    '<div class="workarea"><div class="gridwrap" id="gw">' + gridHTML() + '</div>' +
 		    sidePanelHTML() + '</div>' +
 		  '</div>' + railRHTML() +
@@ -191,6 +192,19 @@ function scopeHTML(){
 	return `<div class="scopebar"><span class="ic">▥</span><span class="ic">∇</span>` +
 	  Object.keys(SCOPE_PICKERS).map(scopeChipHTML).join("") +
 	  `</div>`;
+}
+/* ---------- Process Flow — a collapsible reference diagram, standard
+   across every trainer (see o9-shell.js's PROCESS FLOW section). Pure
+   render piece: content.js owns the steps and calls it directly.
+   TODO: replace with this trainer's real end-to-end process. ---------- */
+function planFlowHTML(){
+	return processFlowHTML("planFlow", "TODO Plan Flow", "TODO stage A to TODO stage E", [
+		{ t:"TODO Stage A", s:"TODO — what happens here" },
+		{ t:"TODO Stage B", s:"TODO — what happens here", state:"on" },
+		{ t:"TODO Stage C", s:"TODO — what happens here", state:"warn" },
+		{ t:"TODO Stage D", s:"TODO — what happens here" },
+		{ t:"TODO Stage E", s:"TODO — what happens here" }
+	]);
 }
 function reportHeaderHTML(){
 	const open = S.inbox.filter(i=>!i.resolved).length;
@@ -286,6 +300,7 @@ function bindShell(){
 	app.querySelectorAll("[data-admin-submit]").forEach(b=>b.addEventListener("click", submitAdminScenario));
 	app.querySelectorAll("[data-admin-exit]").forEach(b=>b.addEventListener("click", exitAdminScenario));
 	app.querySelectorAll("[data-scope-chip]").forEach(b=>b.addEventListener("click", ()=>openScopePicker(b.dataset.scopeChip, b)));
+	app.querySelectorAll("[data-flow-toggle]").forEach(b=>b.addEventListener("click", ()=>toggleProcessFlow(b.dataset.flowToggle)));
 	renderTour();
 	renderAdminModal();
 	renderAdminResults();
