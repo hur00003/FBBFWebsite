@@ -229,7 +229,9 @@ function reportHeaderHTML(){
 
 /* ---------- the one grid — TODO replace with this trainer's real columns ---------- */
 function gridHTML(){
-	let h = `<div class="sec-hdr">TODO GRID TITLE</div>
+	let h = misconceptionHTML("TODO — the mistake trainees predictably make here",
+		"TODO — why it looks right, and what's actually true. Replace with this trainer's real trap, placed above whichever field it applies to.") +
+	  `<div class="sec-hdr">TODO GRID TITLE</div>
     <table class="g"><thead><tr><th>Item</th><th class="n">Basis</th>
     <th class="n">Override</th><th class="n">Final</th></tr></thead><tbody>`;
 	S.items.forEach(it=>{

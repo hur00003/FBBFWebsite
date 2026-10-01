@@ -31,10 +31,10 @@
  *   IMPACT_GRAPH — { [key]: [key,...] } downstream adjacency for the
  *                  Impact Trace arrow overlay (see that section below)
  *
- * processFlowHTML(id, title, subtitle, steps) is a pure render piece (like
- * cellLegend()) — content.js calls it directly wherever a collapsible
- * end-to-end step diagram belongs, no global config needed; see the
- * PROCESS FLOW section below for the steps array shape and S.flows.
+ * processFlowHTML(id, title, subtitle, steps) and misconceptionHTML(title,
+ * body) are pure render pieces (like cellLegend()) — content.js calls them
+ * directly wherever they belong, no global config needed. See the PROCESS
+ * FLOW section below for the steps array shape and S.flows.
  *   render()     — content's shell re-render function (engine calls it
  *                  after coach/tour interactions change S)
  *   fireHint(id, opts) / skipTour()
@@ -88,6 +88,18 @@ function panelHead(eyebrow,title,meta){
 function identityFieldsHTML(fields){
 	return fields.map(([k,v])=>
 		`<div class="idfield"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`).join("");
+}
+
+/* ---------- misconceptionHTML() — a proactive "common mistake here"
+   banner, standard across every trainer. Placed inline above the
+   specific field/row where trainees predictably get it wrong, BEFORE
+   they act — distinct from the Coach dock's reactive, collapsible,
+   easy-to-miss notes. Pure render piece (like cellLegend()); content.js
+   supplies the actual misconception copy per trainer. ---------- */
+function misconceptionHTML(title, body){
+	return `<div class="notice predict">
+    <b style="display:block;font-size:9.5px;letter-spacing:.7px;margin-bottom:5px">LIKELY MISTAKE HERE</b>
+    <b>${esc(title)}</b><br>${esc(body)}</div>`;
 }
 
 /* ---------- explainability-flow node, shared by every flow diagram ---------- */

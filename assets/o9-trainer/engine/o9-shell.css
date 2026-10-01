@@ -122,6 +122,7 @@ button{font-family:inherit;font-size:inherit;cursor:pointer}
 .notice.gap{background:var(--md-fill);color:var(--md-ink);font-weight:700}
 .notice.warn{background:var(--cancel-fill);color:var(--cancel-ink)}
 .notice.info{background:var(--gm-fill);color:var(--gm-ink)}
+.notice.predict{background:var(--md-fill);color:var(--md-ink);border-left:4px solid var(--md-ink)}
 
 /* ---------- ribbon (warm surface — only when coach is collapsed) ---------- */
 .ribbon{display:flex;align-items:stretch;background:var(--act-fill);flex:0 0 auto}
